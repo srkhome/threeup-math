@@ -72,18 +72,6 @@
 
     <main class="max-w-3xl mx-auto px-4 -mt-2 space-y-5">
 
-        <!-- 學習進度 -->
-        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4">
-            <div class="flex items-center justify-between text-sm font-bold text-slate-600">
-                <span>🌟 我的學習足跡</span>
-                <span><span id="visitedCount">0</span> / 5 課</span>
-            </div>
-            <div class="mt-2 w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div id="progressBar" class="h-full bg-gradient-to-r from-amber-300 to-orange-400 rounded-full transition-all duration-500" style="width:0%"></div>
-            </div>
-            <p id="progressHint" class="mt-2 text-xs text-slate-400 font-medium">點選下面的課程卡片，開始第一堂課吧！</p>
-        </section>
-
         <!-- ================= 課程卡片 ================= -->
         <section>
             <h2 class="text-lg font-black text-slate-700 mb-3 px-1">📚 選擇課程</h2>
@@ -303,6 +291,53 @@
             </div>
         </section>
 
+        <!-- ================= 綜合考題 ================= -->
+        <section>
+            <h2 class="text-lg font-black text-slate-700 mb-3 px-1">🏆 綜合挑戰</h2>
+
+            <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-orange-200 overflow-hidden">
+                <a href="exam.html" class="block sm:flex">
+                    <div class="bg-gradient-to-br from-amber-100 via-orange-100 to-rose-200 p-3 sm:w-1/2">
+                        <!-- 考卷 -->
+                        <svg viewBox="0 0 160 100" class="w-full h-32" role="img" aria-label="考卷與100分">
+                            <rect x="38" y="8" width="84" height="86" rx="7" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5"/>
+                            <g stroke="#e5e7eb" stroke-width="2" stroke-linecap="round">
+                                <line x1="50" y1="34" x2="84" y2="34"/>
+                                <line x1="50" y1="52" x2="84" y2="52"/>
+                                <line x1="50" y1="70" x2="84" y2="70"/>
+                            </g>
+                            <g font-size="15" font-weight="900">
+                                <text x="92" y="39" fill="#10b981">✓</text>
+                                <text x="92" y="57" fill="#ef4444">✗</text>
+                                <text x="92" y="75" fill="#10b981">✓</text>
+                            </g>
+                            <text x="44" y="26" font-size="9" font-weight="900" fill="#b45309">綜合考題</text>
+                            <circle cx="118" cy="22" r="19" fill="#ef4444"/>
+                            <text x="118" y="28" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">100</text>
+                            <text x="16" y="34" font-size="20">⭐</text>
+                            <text x="132" y="86" font-size="22">✏️</text>
+                            <text x="14" y="80" font-size="16">🏅</text>
+                        </svg>
+                    </div>
+                    <div class="p-4 space-y-2 sm:w-1/2 sm:flex sm:flex-col sm:justify-center">
+                        <div>
+                            <span class="bg-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-full">綜合測驗</span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800">第一至第四課 綜合考題</h3>
+                        <p class="text-sm text-slate-500 font-medium">共 28 題，滿分 100 分，交卷後有答案與解析</p>
+                        <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">⭕ 是非題</span>
+                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🔘 單選題</span>
+                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🧮 計算題</span>
+                        </div>
+                        <div class="pt-1 text-orange-600 font-black text-sm">開始考試 ➜</div>
+                    </div>
+                </a>
+                <button onclick="speak('綜合考題。包含第一課到第四課的是非題、單選題和計算題，一共二十八題，滿分一百分。')"
+                        class="absolute top-2 right-2 bg-white/90 text-orange-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀綜合考題">🔊</button>
+            </div>
+        </section>
+
         <!-- 小叮嚀 -->
         <section class="bg-amber-50 border border-amber-100 rounded-3xl p-4 flex items-start gap-3">
             <div class="text-3xl">🐸</div>
@@ -319,7 +354,6 @@
 
     <script>
         const KEY = 'mathVisitedLessons';
-        const TOTAL = 5;
 
         // ---------- 語音 ----------
         function speak(text) {
@@ -365,14 +399,6 @@
                 if (badge) badge.classList.toggle('hidden', !visited.includes(n));
             });
 
-            const count = visited.filter(n => n >= 1 && n <= TOTAL).length;
-            document.getElementById('visitedCount').innerText = count;
-            document.getElementById('progressBar').style.width = (count / TOTAL * 100) + '%';
-
-            const hint = document.getElementById('progressHint');
-            if (count === 0) hint.innerText = '點選下面的課程卡片，開始第一堂課吧！';
-            else if (count < TOTAL) hint.innerText = `太棒了！已經學了 ${count} 課，繼續加油！`;
-            else hint.innerText = '🏆 五課全部都學過囉！你是數學小達人！';
         }
 
         // 從課程頁按「上一頁」回來時也要更新
