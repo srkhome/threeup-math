@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小豆豆數學樂園 - 第二課 三四位數加減法語音學習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7F6;
+            color: #2D3748;
+            touch-action: manipulation;
+        }
+        .pastel-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        .pastel-blue { background-color: #EBF8FF; border-color: #BEE3F8; }
+        .pastel-green { background-color: #F0FFF4; border-color: #C6F6D5; }
+
+        .step-pill { transition: all 0.2s; }
+        .step-pill.active {
+            background-color: #E0E7FF;
+            border-color: #818CF8;
+            transform: scale(1.02);
+        }
+        /* 隱藏單元列的捲軸 */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* 彈出視窗動畫 */
+        @keyframes pop-in {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-pop { animation: pop-in 0.2s ease-out; }
+        /* 錄音中的呼吸效果 */
+        @keyframes mic-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .mic-listening { animation: mic-pulse 1s infinite; }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- 頂部導航列 -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 shadow-sm px-4 py-3">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div>
+                    <h1 class="font-black text-lg text-slate-700 leading-tight">小豆豆數學樂園</h1>
+                    <p class="text-xs text-slate-400 font-medium">第二課 · 三、四位數加減法</p>
+                </div>
+            </div>
+            <!-- 全域語音切換 -->
+            <button onclick="toggleGlobalMute()" id="muteBtn"
+                    class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                <span id="muteIcon">🔊</span> <span id="muteText">語音開啟</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要內容容器 -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-6">
+
+        <!-- 頁籤切換器 -->
+        <div class="flex bg-slate-200/70 p-1.5 rounded-2xl shadow-inner">
+            <button onclick="switchTab('learn')" id="tabLearn" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition text-slate-600 bg-white shadow-sm">
+                📖 課本步驟導學
+            </button>
+            <button onclick="switchTab('practice')" id="tabPractice" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition text-slate-500">
+                ✏️ 互動語音測驗
+            </button>
+        </div>
+
+        <!-- ================= 區塊一：課本步驟導學 ================= -->
+        <div id="sectionLearn" class="space-y-4">
+
+            <!-- 單元選擇 -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                <button onclick="selectUnit(1)" id="unitBtn1" class="whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-indigo-600 text-white shadow-md transition">
+                    1. 四位數加法(進位)
+                </button>
+                <button onclick="selectUnit(2)" id="unitBtn2" class="whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-white text-slate-600 shadow-sm transition">
+                    2. 三位數減法(退位)
+                </button>
+                <button onclick="selectUnit(3)" id="unitBtn3" class="whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-white text-slate-600 shadow-sm transition">
+                    3. 連續退位與零
+                </button>
+                <button onclick="selectUnit(4)" id="unitBtn4" class="whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-white text-slate-600 shadow-sm transition">
+                    4. 生活情境估算
+                </button>
+            </div>
+
+            <!-- 導學內容主卡片 -->
+            <div class="pastel-card pastel-blue border-2 p-5 space-y-4 relative overflow-hidden">
+                <div class="absolute top-3 right-3 bg-blue-100 text-blue-700 text-xs font-black px-2.5 py-1 rounded-full">
+                    課本範例
+                </div>
+
+                <div class="pr-16">
+                    <span id="learnBadge" class="text-xs font-bold text-blue-500 bg-white px-2 py-0.5 rounded-md shadow-sm"></span>
+                    <h2 id="learnTitle" class="text-xl font-black text-slate-800 mt-2"></h2>
+                </div>
+
+                <!-- 算式與直式預覽 -->
+                <div class="bg-white/80 rounded-2xl p-4 flex items-center justify-around shadow-sm border border-blue-100">
+                    <div class="text-center">
+                        <div class="text-xs text-slate-400 font-bold mb-1">橫式紀錄</div>
+                        <div id="learnEquation" class="text-lg font-black text-blue-600"></div>
+                    </div>
+                    <div class="h-8 w-px bg-blue-200"></div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-400 font-bold mb-1">直式</div>
+                        <pre id="learnVertical" class="font-mono text-base font-bold text-slate-700 leading-tight text-right inline-block"></pre>
+                    </div>
+                </div>
+
+                <!-- 步驟式導學 -->
+                <div class="space-y-2 pt-2">
+                    <p class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                        <span>💡</span> 點擊下方步驟，聽老師帶你拆解：
+                    </p>
+                    <div id="stepsContainer" class="grid grid-cols-1 gap-2"></div>
+                </div>
+
+                <!-- 語音播放控制器 -->
+                <div class="pt-2 flex gap-2">
+                    <button onclick="playCurrentLessonVoice()" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-3 rounded-2xl font-black text-base shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 active:scale-[.98] transition">
+                        <span>🔊</span> 朗讀整題解題說明
+                    </button>
+                    <button onclick="stopSpeech()" class="bg-white text-slate-500 px-4 rounded-2xl font-bold border border-slate-200 active:scale-95 transition">
+                        停止
+                    </button>
+                </div>
+            </div>
+
+            <!-- 小叮嚀 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-start gap-3">
+                <div class="text-2xl">💡</div>
+                <div>
+                    <h4 class="font-bold text-sm text-slate-700">小豆豆學習小叮嚀</h4>
+                    <p id="learnTip" class="text-xs text-slate-500 mt-0.5 leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 區塊二：互動語音測驗 ================= -->
+        <div id="sectionPractice" class="space-y-4 hidden">
+
+            <div class="pastel-card pastel-green border-2 p-5 space-y-4 relative">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-emerald-600 bg-white px-2.5 py-1 rounded-full shadow-sm">隨機挑戰題</span>
+                    <span id="quizProgress" class="text-xs font-bold text-slate-400"></span>
+                </div>
+
+                <div class="text-center py-2">
+                    <h3 id="quizQuestion" class="text-2xl font-black text-slate-800"></h3>
+                    <p class="text-xs text-slate-400 mt-1">請用直式計算，並輸入或用說的回答答案！</p>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="number" inputmode="numeric" id="userAnswerInput" placeholder="請輸入數字答案..."
+                           class="w-full bg-white border-2 border-emerald-200 rounded-2xl py-3.5 px-4 text-center text-2xl font-black text-slate-700 focus:outline-none focus:border-emerald-500 shadow-inner">
+
+                    <div class="flex gap-2">
+                        <button onclick="startSpeechRecognition()" id="micBtn"
+                                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-black text-base shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-[.98] transition">
+                            <span>🎙️</span> <span id="micText">點擊說出答案</span>
+                        </button>
+                        <button onclick="checkAnswer()" class="bg-slate-800 text-white px-6 rounded-2xl font-black text-base shadow-md active:scale-95 transition">
+                            檢查答案
+                        </button>
+                    </div>
+                </div>
+
+                <div id="feedbackBox" class="hidden rounded-2xl p-4 text-center font-bold text-sm"></div>
+
+                <div class="text-center">
+                    <button onclick="nextQuizQuestion()" id="nextQuizBtn" class="hidden text-sm font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-5 py-2.5 rounded-xl transition">
+                        下一題 ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- 成績統計 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-around text-center">
+                <div>
+                    <div class="text-xs text-slate-400 font-bold">已答對題數</div>
+                    <div id="scoreCorrect" class="text-xl font-black text-emerald-600">0</div>
+                </div>
+                <div class="h-8 w-px bg-slate-100"></div>
+                <div>
+                    <div class="text-xs text-slate-400 font-bold">挑戰進度</div>
+                    <div id="scoreTotal" class="text-xl font-black text-slate-700">0 / 5</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="max-w-md mx-auto text-center pt-8 pb-4 text-xs text-slate-400 font-medium space-y-3">
+        <a href="index.html" onclick="stopSpeech()"
+           class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+            🏠 回到首頁
+        </a>
+        <div>小豆豆數學語音學習輔助網 · 專為國小學童設計 🎒</div>
+    </footer>
+
+    <!-- 自訂訊息提示框 -->
+    <div id="customModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 items-center justify-center p-4 hidden">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl text-center space-y-4">
+            <div id="modalIcon" class="text-4xl">🌟</div>
+            <h3 id="modalTitle" class="text-lg font-black text-slate-800"></h3>
+            <p id="modalMessage" class="text-sm text-slate-500 leading-relaxed"></p>
+            <button onclick="closeModal()" class="w-full bg-emerald-500 text-white font-black py-3 rounded-2xl shadow-md active:scale-95 transition">
+                好的
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 課程資料庫 =================
+        const lessons = [
+            {
+                title: "活動一 · 三四位數加法與進位",
+                question: "爸爸和豆豆坐火車，買了全票 752 元和兒童票 376 元，共要付多少元？",
+                equation: "752 + 376 = 1128",
+                vertical: "  752\n+ 376\n-----\n 1128",
+                tip: "直式加法要點：位數對齊！從個位開始加，滿十向前一位進位。個位 2+6=8，十位 5+7=12 寫 2 進 1，百位 7+3+1=11 寫 1 進 1，千位寫 1。",
+                steps: [
+                    { title: "步驟 1：先算個位", desc: "2 加 6 等於 8，在個位寫 8。" },
+                    { title: "步驟 2：再算十位", desc: "5 加 7 等於 12，在十位寫 2，向百位上方記 1。" },
+                    { title: "步驟 3：再算百位", desc: "7 加 3 再加進位的 1 等於 11，在百位寫 1，向千位上方記 1。" },
+                    { title: "步驟 4：最後算千位", desc: "千位只有進位的 1，直接寫下 1，答案是 1128 元。" }
+                ]
+            },
+            {
+                title: "活動二 · 三位數減法與退位",
+                question: "彥辰帶了 345 元逛紀念品店，買紀念品鑰匙圈花了 88 元，還剩下多少元？",
+                equation: "345 - 88 = 257",
+                vertical: "  345\n-  88\n-----\n  257",
+                tip: "直式減法要點：個位不夠減，要向十位借 1 當作 10 來減！十位也不夠時要向百位借。",
+                steps: [
+                    { title: "步驟 1：先算個位", desc: "5 不夠減 8，向十位借 1 當作 10，10 加 5 等於 15，15 減 8 等於 7。" },
+                    { title: "步驟 2：再算十位", desc: "十位原本是 4，借走 1 剩下 3，3 不夠減 8，向百位借 1 當作 10，10 加 3 等於 13，13 減 8 等於 5。" },
+                    { title: "步驟 3：最後算百位", desc: "百位原本是 3，借走 1 剩下 2，直接落下 2，答案是 257 元。" }
+                ]
+            },
+            {
+                title: "活動三 · 連續退位與被減數有 0",
+                question: "思妤有 500 元，買了 247 元的古蹟拼圖後，還剩下多少元？",
+                equation: "500 - 247 = 253",
+                vertical: "  500\n- 247\n-----\n  253",
+                tip: "當被減數有 0 時（如 500），個位 0 不夠減 7，十位也是 0！必須先從百位借 1 當作 10 個十，再從十位借 1 個十當作 10 個一。",
+                steps: [
+                    { title: "步驟 1：個位與十位都是 0", desc: "個位 0 不夠減 7，十位也是 0。先由百位借 1，換成 10 個十。" },
+                    { title: "步驟 2：十位再借給個位", desc: "十位變成 9，再把 1 個十換成 10 個一，個位變成 10。" },
+                    { title: "步驟 3：開始相減", desc: "個位 10 減 7 等於 3，十位 9 減 4 等於 5，百位 4 減 2 等於 2，答案是 253 元。" }
+                ]
+            },
+            {
+                title: "活動四 · 生活情境數字估算",
+                question: "從水萍塭公園到安平古堡大約 4000 公尺，到億載金城大約 2000 公尺，合計大約多少？",
+                equation: "4000 + 2000 = 6000",
+                vertical: "  4000\n+ 2000\n------\n  6000",
+                tip: "數字估算時，通常使用「整百」或「整千」來約算，不需要算出精確答案，用來檢查答案合不合理非常方便！",
+                steps: [
+                    { title: "步驟 1：觀察數據", desc: "從水萍塭公園到安平古堡大約 4000 公尺，到億載金城大約 2000 公尺。" },
+                    { title: "步驟 2：整千估算相加", desc: "將 4000 與 2000 相加，4000 加 2000 等於 6000 公尺。" },
+                    { title: "步驟 3：合理性檢查", desc: "利用估算結果可以快速判斷計算有沒有算錯喔！" }
+                ]
+            }
+        ];
+
+        // ================= 測驗題庫 =================
+        const quizList = [
+            { q: "584 + 627 = ?", ans: 1211, hint: "個位 4+7=11 寫 1 進 1，十位 8+2+1=11 寫 1 進 1，百位 5+6+1=12。" },
+            { q: "365 + 745 = ?", ans: 1110, hint: "個位 5+5=10 寫 0 進 1，十位 6+4+1=11 寫 1 進 1，百位 3+7+1=11。" },
+            { q: "527 - 69 = ?", ans: 458, hint: "個位 7 不夠減 9，向十位借 1；十位 2 變成 1，也不夠減 6，再向百位借 1。" },
+            { q: "305 - 149 = ?", ans: 156, hint: "被減數十位是 0，需連續退位。個位 15-9=6，十位 9-4=5，百位 2-1=1。" },
+            { q: "7400 - 4007 = ?", ans: 3393, hint: "個位 0 不夠減 7，十位也是 0，要從百位借 1，一路退位下來再逐位相減。" }
+        ];
+
+        let currentLessonIndex = 0;
+        let currentQuizIndex = 0;
+        let scoreCorrectCount = 0;
+        let isMuted = false;
+        let answered = false;      // 本題是否已答對（避免重複加分）
+        let isListening = false;   // 是否正在語音辨識
+
+        // 初始化頁面（不自動發聲，因為瀏覽器需要使用者先點擊才允許播放語音）
+        window.addEventListener('load', function () {
+            renderLesson(0);
+            renderQuiz(false);
+        });
+
+        // 離開頁面時停止語音
+        window.addEventListener('pagehide', stopSpeech);
+
+        // 按 Enter 送出答案
+        document.getElementById('userAnswerInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // ================= 頁籤與單元 =================
+        function switchTab(tab) {
+            const btnLearn = document.getElementById('tabLearn');
+            const btnPractice = document.getElementById('tabPractice');
+            const secLearn = document.getElementById('sectionLearn');
+            const secPractice = document.getElementById('sectionPractice');
+            const on = "flex-1 py-2.5 rounded-xl font-bold text-sm transition text-slate-600 bg-white shadow-sm";
+            const off = "flex-1 py-2.5 rounded-xl font-bold text-sm transition text-slate-500";
+
+            stopSpeech();
+            if (tab === 'learn') {
+                btnLearn.className = on;
+                btnPractice.className = off;
+                secLearn.classList.remove('hidden');
+                secPractice.classList.add('hidden');
+            } else {
+                btnPractice.className = on;
+                btnLearn.className = off;
+                secPractice.classList.remove('hidden');
+                secLearn.classList.add('hidden');
+                speakText(`請回答第 ${currentQuizIndex + 1} 題：${toSpeech(quizList[currentQuizIndex].q)}`);
+            }
+        }
+
+        function selectUnit(index) {
+            currentLessonIndex = index - 1;
+            for (let i = 1; i <= lessons.length; i++) {
+                document.getElementById(`unitBtn${i}`).className = (i === index)
+                    ? "whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-indigo-600 text-white shadow-md transition"
+                    : "whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-white text-slate-600 shadow-sm transition";
+            }
+            renderLesson(currentLessonIndex);
+            speakText(lessons[currentLessonIndex].question);
+        }
+
+        function renderLesson(idx) {
+            const lesson = lessons[idx];
+            document.getElementById('learnBadge').textContent = lesson.title;
+            document.getElementById('learnTitle').textContent = lesson.question;
+            document.getElementById('learnEquation').textContent = lesson.equation;
+            document.getElementById('learnVertical').textContent = lesson.vertical;
+            document.getElementById('learnTip').textContent = lesson.tip;
+
+            const container = document.getElementById('stepsContainer');
+            container.innerHTML = '';
+            lesson.steps.forEach(function (step) {
+                const div = document.createElement('div');
+                div.className = "bg-white/90 border border-blue-100 rounded-2xl p-3 flex items-center justify-between gap-2 step-pill cursor-pointer active:scale-[.98]";
+                div.onclick = function () { speakStep(step.title, step.desc, div); };
+
+                const textWrap = document.createElement('div');
+                const t = document.createElement('div');
+                t.className = "font-bold text-slate-800 text-sm";
+                t.textContent = step.title;
+                const d = document.createElement('div');
+                d.className = "text-xs text-slate-500 mt-0.5";
+                d.textContent = step.desc;
+                textWrap.appendChild(t);
+                textWrap.appendChild(d);
+
+                const icon = document.createElement('span');
+                icon.className = "text-lg";
+                icon.textContent = "🔊";
+
+                div.appendChild(textWrap);
+                div.appendChild(icon);
+                container.appendChild(div);
+            });
+        }
+
+        // ================= 語音合成 =================
+        // 把算式符號轉成適合朗讀的中文
+        function toSpeech(text) {
+            return text
+                .replace(/\+/g, ' 加 ')
+                .replace(/-/g, ' 減 ')
+                .replace(/=/g, ' 等於 ')
+                .replace(/\?/g, ' 多少');
+        }
+
+        function speakText(text) {
+            if (isMuted) return;
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = 0.95;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 使用者主動按下朗讀時，若語音被關閉要提醒
+        function warnIfMuted() {
+            if (isMuted) {
+                showModal("目前語音是關閉的，請先點右上角「語音關閉」按鈕開啟喔！", "語音已關閉", "🔇");
+                return true;
+            }
+            return false;
+        }
+
+        function speakStep(title, desc, element) {
+            document.querySelectorAll('.step-pill').forEach(function (el) { el.classList.remove('active'); });
+            if (element) element.classList.add('active');
+            if (warnIfMuted()) return;
+            speakText(`${title}。${toSpeech(desc)}`);
+        }
+
+        function playCurrentLessonVoice() {
+            if (warnIfMuted()) return;
+            const lesson = lessons[currentLessonIndex];
+            let fullText = `${lesson.question}。橫式記法是 ${toSpeech(lesson.equation)}。`;
+            lesson.steps.forEach(function (s) {
+                fullText += `${s.title}，${toSpeech(s.desc)}。`;
+            });
+            speakText(fullText);
+        }
+
+        function toggleGlobalMute() {
+            isMuted = !isMuted;
+            document.getElementById('muteText').textContent = isMuted ? "語音關閉" : "語音開啟";
+            document.getElementById('muteIcon').textContent = isMuted ? "🔇" : "🔊";
+            if (isMuted) {
+                stopSpeech();
+            } else {
+                speakText("語音功能已開啟");
+            }
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        // ================= 互動測驗 =================
+        function renderQuiz(speak) {
+            const q = quizList[currentQuizIndex];
+            answered = false;
+            document.getElementById('quizQuestion').textContent = q.q;
+            document.getElementById('quizProgress').textContent = `第 ${currentQuizIndex + 1} 題 / 共 ${quizList.length} 題`;
+            document.getElementById('userAnswerInput').value = '';
+            document.getElementById('feedbackBox').classList.add('hidden');
+            document.getElementById('nextQuizBtn').classList.add('hidden');
+            document.getElementById('nextQuizBtn').textContent =
+                (currentQuizIndex === quizList.length - 1) ? "看成績 🏆" : "下一題 ➡️";
+            document.getElementById('scoreTotal').textContent = `${currentQuizIndex} / ${quizList.length}`;
+            document.getElementById('scoreCorrect').textContent = scoreCorrectCount;
+
+            if (speak) {
+                speakText(`請回答第 ${currentQuizIndex + 1} 題：${toSpeech(q.q)}`);
+            }
+        }
+
+        function checkAnswer() {
+            if (answered) return; // 已答對就不再重複計分
+
+            const userAns = document.getElementById('userAnswerInput').value.trim();
+            const correctAns = quizList[currentQuizIndex].ans;
+            const feedbackBox = document.getElementById('feedbackBox');
+
+            if (!userAns) {
+                showModal("請先輸入或說出答案喔！", "提示", "✏️");
+                return;
+            }
+
+            feedbackBox.classList.remove('hidden');
+            if (parseInt(userAns, 10) === correctAns) {
+                answered = true;
+                feedbackBox.className = "bg-emerald-100 text-emerald-800 rounded-2xl p-4 text-center font-bold text-sm border border-emerald-200";
+                feedbackBox.textContent = `🎉 太棒了！答對囉！正確答案就是 ${correctAns}。`;
+                scoreCorrectCount++;
+                document.getElementById('scoreCorrect').textContent = scoreCorrectCount;
+                document.getElementById('scoreTotal').textContent = `${currentQuizIndex + 1} / ${quizList.length}`;
+                speakText("答對了！你真聰明！");
+                showModal("太棒了，答對囉！", "挑戰成功 🌟", "🎉");
+                document.getElementById('nextQuizBtn').classList.remove('hidden');
+            } else {
+                feedbackBox.className = "bg-rose-100 text-rose-800 rounded-2xl p-4 text-center font-bold text-sm border border-rose-200";
+                feedbackBox.textContent = `💪 哎呀差一點點！提示：${quizList[currentQuizIndex].hint}`;
+                speakText("哎呀差一點點，再想一想喔！");
+            }
+        }
+
+        function nextQuizQuestion() {
+            if (currentQuizIndex < quizList.length - 1) {
+                currentQuizIndex++;
+                renderQuiz(true);
+            } else {
+                const finalScore = scoreCorrectCount;
+                const total = quizList.length;
+                currentQuizIndex = 0;
+                scoreCorrectCount = 0;
+                renderQuiz(false);
+                showModal(`恭喜完成所有挑戰！答對 ${finalScore} / ${total} 題！可以再挑戰一次喔！`, "測驗結業 🏆", "👑");
+                speakText(`恭喜完成所有挑戰，你答對了 ${finalScore} 題！`);
+            }
+        }
+
+        // ================= 語音辨識 =================
+        // 把中文數字（例如「一千二百一十一」）轉成阿拉伯數字
+        function chineseToNumber(str) {
+            const digits = { '零': 0, '〇': 0, '一': 1, '二': 2, '兩': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+            const units = { '十': 10, '百': 100, '千': 1000 };
+
+            // 沒有單位字（例如「一二一一」）：逐字轉成數字串
+            if (!/[十百千萬万]/.test(str)) {
+                return str.split('').map(function (c) { return digits[c]; }).join('');
+            }
+
+            let total = 0, section = 0, num = 0;
+            for (const ch of str) {
+                if (ch in digits) {
+                    num = digits[ch];
+                } else if (ch in units) {
+                    section += (num || 1) * units[ch];
+                    num = 0;
+                } else { // 萬
+                    total += (section + num) * 10000;
+                    section = 0;
+                    num = 0;
+                }
+            }
+            return String(total + section + num);
+        }
+
+        function extractNumber(transcript) {
+            let s = transcript.replace(/[零〇一二兩两三四五六七八九十百千萬万]+/g, function (m) {
+                return ' ' + chineseToNumber(m) + ' ';
+            });
+            s = s.replace(/(\d)[,，](?=\d)/g, '$1'); // 1,211 → 1211
+            const match = s.match(/\d+/);
+            return match ? match[0] : '';
+        }
+
+        function setMicState(listening) {
+            const micBtn = document.getElementById('micBtn');
+            const micText = document.getElementById('micText');
+            isListening = listening;
+            if (listening) {
+                micText.textContent = "請說出答案中...";
+                micBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                micBtn.classList.add('bg-rose-600', 'mic-listening');
+            } else {
+                micText.textContent = "點擊說出答案";
+                micBtn.classList.remove('bg-rose-600', 'mic-listening');
+                micBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            }
+        }
+
+        function startSpeechRecognition() {
+            if (isListening) return;
+            if (answered) {
+                showModal("這題已經答對了，請按「下一題」繼續喔！", "提示", "➡️");
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showModal("您的瀏覽器不支援語音辨識功能，請直接使用鍵盤輸入數字喔！", "提示", "📱");
+                return;
+            }
+
+            stopSpeech(); // 避免麥克風錄到自己的朗讀聲
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'zh-TW';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function () { setMicState(true); };
+
+            recognition.onresult = function (event) {
+                const speechResult = event.results[0][0].transcript;
+                const numberText = extractNumber(speechResult);
+                if (numberText) {
+                    document.getElementById('userAnswerInput').value = numberText;
+                    checkAnswer();
+                } else {
+                    showModal(`聽不清楚你在說什麼（聽到：${speechResult}），請再試一次或直接輸入數字！`, "再試一次", "🎤");
+                }
+            };
+
+            recognition.onerror = function (event) {
+                setMicState(false);
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    showModal("需要允許使用麥克風才能用說的回答，或是直接輸入數字也可以喔！", "無法使用麥克風", "🎙️");
+                }
+            };
+
+            recognition.onend = function () { setMicState(false); };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                setMicState(false);
+            }
+        }
+
+        // ================= 提示視窗 =================
+        function showModal(msg, title, icon) {
+            document.getElementById('modalMessage').textContent = msg;
+            document.getElementById('modalTitle').textContent = title || "小提示";
+            document.getElementById('modalIcon').textContent = icon || "🌟";
+            const modal = document.getElementById('customModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

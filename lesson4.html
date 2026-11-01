@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小學數學乘法語音學習樂園</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelBlue: '#E2EEF8',
+                        pastelGreen: '#E3F2ED',
+                        pastelYellow: '#FEF6E1',
+                        pastelPurple: '#EFE5F5',
+                        pastelPink: '#FCE8E6',
+                        brandBlue: '#4A90E2',
+                        brandGreen: '#50E3C2',
+                        brandPurple: '#9B51E0',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F7F9FC;
+            color: #2D3748;
+            touch-action: manipulation;
+        }
+        .active-tab {
+            border-bottom: 4px solid #4A90E2;
+            color: #2B6CB0;
+            font-weight: 700;
+        }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* 直式算式：等寬字體 + 保留空白，數字才會對齊 */
+        .vert {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+            white-space: pre;
+            line-height: 1.45;
+            text-align: left;
+            display: inline-block;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        .vert .cy { color: #d97706; font-size: 0.85em; }   /* 進位小數字 */
+        .vert .rs { color: #2B6CB0; }                      /* 結果 */
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-pop { animation: popIn 0.25s ease-out; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- 頂部標題列 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 px-3 py-3">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-bold text-gray-800 leading-tight truncate">數學乘法語音樂園</h1>
+                    <p class="text-[11px] text-gray-500 truncate">第四課 · 聽聲音、玩直式</p>
+                </div>
+            </div>
+            <button onclick="readAllQuestions()" class="shrink-0 bg-pastelBlue hover:bg-blue-100 text-brandBlue px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition active:scale-95 whitespace-nowrap">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>朗讀本頁</span>
+            </button>
+        </div>
+
+        <!-- 單元切換列 -->
+        <div class="max-w-md mx-auto mt-3 overflow-x-auto flex space-x-2 pb-1 no-scrollbar border-t pt-2">
+            <button onclick="switchTab('unit1')" id="btn-unit1" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium bg-pastelBlue text-brandBlue active-tab transition">
+                1. 二位數乘一位數
+            </button>
+            <button onclick="switchTab('unit2')" id="btn-unit2" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 transition">
+                2. 三位數乘一位數
+            </button>
+            <button onclick="switchTab('unit3')" id="btn-unit3" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 transition">
+                3. 連續兩步驟乘法
+            </button>
+            <button onclick="switchTab('unit4')" id="btn-unit4" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 transition">
+                4. 乘法估算與生活
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-28">
+
+        <!-- ================= 單元 1 ================= -->
+        <div id="unit1" class="unit-content space-y-4">
+            <div class="bg-pastelBlue p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold bg-white text-brandBlue px-2 py-0.5 rounded-full">單元目標</span>
+                    <h2 class="text-base font-bold text-gray-800 mt-1">二位數乘一位數（含進位與不進位）</h2>
+                </div>
+                <button onclick="speakText('單元一：二位數乘一位數。讓我們透過有趣的練習，學習直式乘法與進位觀念！')" class="shrink-0 bg-white w-10 h-10 rounded-full flex items-center justify-center text-brandBlue shadow-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+            <!-- 例題 1 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-blue-50 text-brandBlue text-xs font-bold px-2.5 py-1 rounded-md">例題 1 (彈珠台遊戲)</span>
+                    <button onclick="speakText('玩一次彈珠台遊戲要二十元，品睿玩了三次，共花了多少元？')" class="shrink-0 text-brandBlue text-sm flex items-center space-x-1 bg-pastelBlue px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">玩一次彈珠臺遊戲要 <span class="text-brandBlue text-lg">20</span> 元，品睿玩了 <span class="text-brandBlue text-lg">3</span> 次，共花了多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-1-1', this)" class="w-full bg-pastelBlue hover:bg-blue-100 text-brandBlue py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-1-1" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl flex justify-around items-center gap-3">
+                        <div class="vert">  20
+×  3
+----
+<span class="rs">  60</span></div>
+                        <div class="text-left text-xs text-gray-600 bg-white p-2 rounded-lg shadow-sm space-y-1">
+                            <p>💡 <b>直式說明</b>：</p>
+                            <p>• 個位：0 × 3 = 0</p>
+                            <p>• 十位：2 × 3 = 6 (6個十)</p>
+                            <button onclick="speakText('解答說明：個位零乘以三等於零，十位二乘以三等於六個十，答案是六十元。')" class="mt-1 text-brandBlue text-xs bg-pastelBlue px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-1-1" placeholder="輸入答案" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-brandBlue">
+                    <button onclick="checkAnswer('1-1', 60)" class="bg-brandBlue text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-1-1')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-1-1" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：可以用 20 + 20 + 20 = 60，或直接算 2 × 3 = 6，後面補一個 0。
+                </div>
+                <div id="feedback-1-1" class="text-sm font-bold hidden"></div>
+            </div>
+
+            <!-- 例題 2（43×2 不需要進位） -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-blue-50 text-brandBlue text-xs font-bold px-2.5 py-1 rounded-md">例題 2 (不進位)</span>
+                    <button onclick="speakText('一隻小玩偶賣四十三元，宥希買了兩隻，要花多少元？')" class="shrink-0 text-brandBlue text-sm flex items-center space-x-1 bg-pastelBlue px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一隻小玩偶賣 <span class="text-brandBlue text-lg">43</span> 元，宥希買了 <span class="text-brandBlue text-lg">2</span> 隻，要花多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-1-2', this)" class="w-full bg-pastelBlue hover:bg-blue-100 text-brandBlue py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-1-2" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl flex justify-around items-center gap-3">
+                        <div class="vert">  43
+×  2
+----
+<span class="rs">  86</span></div>
+                        <div class="text-left text-xs text-gray-600 bg-white p-2 rounded-lg shadow-sm space-y-1">
+                            <p>💡 <b>直式說明</b>：</p>
+                            <p>• 個位：3 × 2 = 6</p>
+                            <p>• 十位：4 × 2 = 8 (8個十)</p>
+                            <p>• 答案：86 元（都沒有滿十，不用進位）</p>
+                            <button onclick="speakText('解答說明：個位三乘以二等於六，十位四乘以二等於八，沒有滿十不用進位，答案是八十六元。')" class="mt-1 text-brandBlue text-xs bg-pastelBlue px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-1-2" placeholder="輸入答案" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-brandBlue">
+                    <button onclick="checkAnswer('1-2', 86)" class="bg-brandBlue text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-1-2')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-1-2" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：先算個位 3×2=6，再算十位 40×2=80，80加6等於86。
+                </div>
+                <div id="feedback-1-2" class="text-sm font-bold hidden"></div>
+            </div>
+
+            <!-- 例題 3（新增：有進位） -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-blue-50 text-brandBlue text-xs font-bold px-2.5 py-1 rounded-md">例題 3 (有進位)</span>
+                    <button onclick="speakText('一包餅乾二十七元，小美買了三包，要花多少元？')" class="shrink-0 text-brandBlue text-sm flex items-center space-x-1 bg-pastelBlue px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一包餅乾 <span class="text-brandBlue text-lg">27</span> 元，小美買了 <span class="text-brandBlue text-lg">3</span> 包，要花多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-1-3', this)" class="w-full bg-pastelBlue hover:bg-blue-100 text-brandBlue py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-1-3" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl flex justify-around items-center gap-3">
+                        <div class="vert">  <span class="cy">2</span> 
+  27
+×  3
+----
+<span class="rs">  81</span></div>
+                        <div class="text-left text-xs text-gray-600 bg-white p-2 rounded-lg shadow-sm space-y-1">
+                            <p>💡 <b>進位說明</b>：</p>
+                            <p>• 個位：7 × 3 = 21（寫 1 進 2）</p>
+                            <p>• 十位：2 × 3 = 6，再加進位的 2 = 8</p>
+                            <p>• 答案：81 元</p>
+                            <button onclick="speakText('解答說明：個位七乘以三等於二十一，寫一進二；十位二乘以三等於六，再加進位的二等於八，答案是八十一元。')" class="mt-1 text-brandBlue text-xs bg-pastelBlue px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-1-3" placeholder="輸入答案" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-brandBlue">
+                    <button onclick="checkAnswer('1-3', 81)" class="bg-brandBlue text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-1-3')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-1-3" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：個位 7×3=21，寫 1 進 2；十位 2×3=6，再加上進位的 2。
+                </div>
+                <div id="feedback-1-3" class="text-sm font-bold hidden"></div>
+            </div>
+        </div>
+
+        <!-- ================= 單元 2 ================= -->
+        <div id="unit2" class="unit-content hidden space-y-4">
+            <div class="bg-pastelGreen p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold bg-white text-emerald-700 px-2 py-0.5 rounded-full">單元目標</span>
+                    <h2 class="text-base font-bold text-gray-800 mt-1">三位數乘一位數（多次進位與零的處理）</h2>
+                </div>
+                <button onclick="speakText('單元二：三位數乘一位數。挑戰百位數的直式乘法與進位！')" class="shrink-0 bg-white w-10 h-10 rounded-full flex items-center justify-center text-emerald-700 shadow-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+            <!-- 例題 1 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 1 (音樂會門票)</span>
+                    <button onclick="speakText('一張音樂會門票兩百元，共四人去觀賞，買門票要付多少元？')" class="shrink-0 text-emerald-700 text-sm flex items-center space-x-1 bg-pastelGreen px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一張音樂會門票 <span class="text-emerald-700 text-lg">200</span> 元，共 <span class="text-emerald-700 text-lg">4</span> 人去觀賞，買門票要付多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-2-1', this)" class="w-full bg-pastelGreen hover:bg-emerald-100 text-emerald-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-2-1" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl flex justify-around items-center gap-3">
+                        <div class="vert">  200
+×   4
+-----
+<span class="rs">  800</span></div>
+                        <div class="text-left text-xs text-gray-600 bg-white p-2 rounded-lg shadow-sm space-y-1">
+                            <p>💡 <b>計算解析</b>：</p>
+                            <p>• 2 張 100 元的 4 倍是 8 張 100 元，也就是 800 元。</p>
+                            <button onclick="speakText('解答說明：二張一百元的四倍是八張一百元，也就是八百元。')" class="mt-1 text-emerald-700 text-xs bg-pastelGreen px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-2-1" placeholder="輸入答案" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-emerald-600">
+                    <button onclick="checkAnswer('2-1', 800)" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-2-1')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-2-1" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：算式為 200 × 4 = ?，先算 2 × 4 = 8，後面加上兩個 0。
+                </div>
+                <div id="feedback-2-1" class="text-sm font-bold hidden"></div>
+            </div>
+
+            <!-- 例題 2 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 2 (手工皂與精油)</span>
+                    <button onclick="speakText('一塊手工皂賣一百五十八元，精油是手工皂的五倍，精油要多少元？')" class="shrink-0 text-emerald-700 text-sm flex items-center space-x-1 bg-pastelGreen px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一塊手工皂 <span class="text-emerald-700 text-lg">158</span> 元，精油是手工皂的 <span class="text-emerald-700 text-lg">5</span> 倍，精油要多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-2-2', this)" class="w-full bg-pastelGreen hover:bg-emerald-100 text-emerald-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-2-2" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl flex justify-around items-center gap-3">
+                        <div class="vert">  <span class="cy">24</span> 
+  158
+×   5
+-----
+<span class="rs">  790</span></div>
+                        <div class="text-left text-xs text-gray-600 bg-white p-2 rounded-lg shadow-sm space-y-1">
+                            <p>💡 <b>多次進位</b>：</p>
+                            <p>• 8×5=40 (寫0進4)</p>
+                            <p>• 5×5=25+4=29 (寫9進2)</p>
+                            <p>• 1×5+2=7 (寫7)</p>
+                            <button onclick="speakText('解答說明：個位八乘以五四十寫零進四，十位五乘以五二十五加四二十九寫九進二，百位一乘以五加二等於七，答案是七百九十元。')" class="mt-1 text-emerald-700 text-xs bg-pastelGreen px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-2-2" placeholder="輸入答案" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-emerald-600">
+                    <button onclick="checkAnswer('2-2', 790)" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-2-2')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-2-2" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：列式為 158 × 5，注意個位進位與十位進位！
+                </div>
+                <div id="feedback-2-2" class="text-sm font-bold hidden"></div>
+            </div>
+        </div>
+
+        <!-- ================= 單元 3 ================= -->
+        <div id="unit3" class="unit-content hidden space-y-4">
+            <div class="bg-pastelPurple p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold bg-white text-purple-700 px-2 py-0.5 rounded-full">單元目標</span>
+                    <h2 class="text-base font-bold text-gray-800 mt-1">連續兩步驟乘法問題</h2>
+                </div>
+                <button onclick="speakText('單元三：連續兩步驟乘法。學會先算什麼、再算什麼的解題邏輯！')" class="shrink-0 bg-white w-10 h-10 rounded-full flex items-center justify-center text-purple-700 shadow-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+            <!-- 例題 1 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 1 (泡芙禮盒)</span>
+                    <button onclick="speakText('一盒泡芙有二個，每個泡芙賣四十五元，媽媽買了三盒，共要付多少元？')" class="shrink-0 text-purple-700 text-sm flex items-center space-x-1 bg-pastelPurple px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一盒泡芙有 <span class="text-purple-700 text-lg">2</span> 個，每個泡芙賣 <span class="text-purple-700 text-lg">45</span> 元，媽媽買了 <span class="text-purple-700 text-lg">3</span> 盒，共要付多少元？</p>
+
+                <button onclick="toggleAnswer('ans-box-3-1', this)" class="w-full bg-pastelPurple hover:bg-purple-100 text-purple-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-3-1" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl text-sm text-gray-700 space-y-2">
+                        <p class="font-bold text-purple-700">💡 解題步驟拆解：</p>
+                        <div class="bg-white p-2 rounded-lg border border-purple-100 flex justify-between items-center gap-2">
+                            <span>先算：一盒泡芙多少元？ (45 × 2)</span>
+                            <span class="font-bold text-purple-700 whitespace-nowrap">90 元</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-purple-100 flex justify-between items-center gap-2">
+                            <span>再算：3盒總共多少元？ (90 × 3)</span>
+                            <span class="font-bold text-purple-700 whitespace-nowrap">270 元</span>
+                        </div>
+                        <button onclick="speakText('解答說明：先算一盒泡芙四十五乘以二等於九十元，再算三盒總共九十乘以三等於二百七十元。')" class="mt-1 text-purple-700 text-xs bg-pastelPurple px-2 py-0.5 rounded-md flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-3-1" placeholder="輸入總金額" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-purple-600">
+                    <button onclick="checkAnswer('3-1', 270)" class="bg-purple-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-3-1')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-3-1" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：先算 45 × 2 = 90，再算 90 × 3 = 270。
+                </div>
+                <div id="feedback-3-1" class="text-sm font-bold hidden"></div>
+            </div>
+
+            <!-- 例題 2 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 2 (拉麵與箱子)</span>
+                    <button onclick="speakText('一袋拉麵有四包，一箱有六袋，露營時爸爸買了二箱，一共有幾包拉麵？')" class="shrink-0 text-purple-700 text-sm flex items-center space-x-1 bg-pastelPurple px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">一袋拉麵 <span class="text-purple-700 text-lg">4</span> 包，一箱 <span class="text-purple-700 text-lg">6</span> 袋，爸爸買了 <span class="text-purple-700 text-lg">2</span> 箱，共有幾包？</p>
+
+                <button onclick="toggleAnswer('ans-box-3-2', this)" class="w-full bg-pastelPurple hover:bg-purple-100 text-purple-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-3-2" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl text-sm text-gray-700 space-y-2">
+                        <p class="font-bold text-purple-700">💡 解題步驟拆解：</p>
+                        <div class="bg-white p-2 rounded-lg border border-purple-100 flex justify-between items-center gap-2">
+                            <span>先算：一箱有幾包？ (4 × 6)</span>
+                            <span class="font-bold text-purple-700 whitespace-nowrap">24 包</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-purple-100 flex justify-between items-center gap-2">
+                            <span>再算：2箱有幾包？ (24 × 2)</span>
+                            <span class="font-bold text-purple-700 whitespace-nowrap">48 包</span>
+                        </div>
+                        <button onclick="speakText('解答說明：先算一箱有四乘以六等於二十四包，再算兩箱二十四乘以二等於四十八包。')" class="mt-1 text-purple-700 text-xs bg-pastelPurple px-2 py-0.5 rounded-md flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-3-2" placeholder="輸入總包數" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-purple-600">
+                    <button onclick="checkAnswer('3-2', 48)" class="bg-purple-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-3-2')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-3-2" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：先算一箱有 4 × 6 = 24 包，再算兩箱 24 × 2 = 48 包。
+                </div>
+                <div id="feedback-3-2" class="text-sm font-bold hidden"></div>
+            </div>
+        </div>
+
+        <!-- ================= 單元 4 ================= -->
+        <div id="unit4" class="unit-content hidden space-y-4">
+            <div class="bg-pastelPink p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-xs font-bold bg-white text-rose-700 px-2 py-0.5 rounded-full">單元目標</span>
+                    <h2 class="text-base font-bold text-gray-800 mt-1">乘法估算與生活情境應用</h2>
+                </div>
+                <button onclick="speakText('單元四：乘法估算。學會用整百或整十數字來估算生活中的花費與數量！')" class="shrink-0 bg-white w-10 h-10 rounded-full flex items-center justify-center text-rose-700 shadow-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+            <!-- 例題 1 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-rose-50 text-rose-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 1 (特賣會估算)</span>
+                    <button onclick="speakText('上衣一件三百九十九元，買三件大約多少元？')" class="shrink-0 text-rose-700 text-sm flex items-center space-x-1 bg-pastelPink px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">上衣一件 <span class="text-rose-700 text-lg">399</span> 元，買 <span class="text-rose-700 text-lg">3</span> 件大約多少元？（估算）</p>
+
+                <button onclick="toggleAnswer('ans-box-4-1', this)" class="w-full bg-pastelPink hover:bg-rose-100 text-rose-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-4-1" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl text-sm text-gray-700 space-y-1">
+                        <p>💡 <b>估算思考</b>：</p>
+                        <p>• 399 元大約是 <b>400</b> 元。</p>
+                        <p>• 買 3 件大約是：400 × 3 = 1200 元。</p>
+                        <button onclick="speakText('解答說明：三百九十九元大約是四百元，買三件大約四百乘以三等於一千二百元。')" class="mt-1 text-rose-700 text-xs bg-pastelPink px-2 py-0.5 rounded-md flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <input type="number" inputmode="numeric" id="ans-4-1" placeholder="輸入估算金額" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:border-rose-500">
+                    <button onclick="checkAnswer('4-1', 1200, {1197: '1197 是精確的答案喔！這題要「估算」，把 399 約成 400，再乘以 3。'})" class="bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-4-1')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-4-1" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：把 399 用四捨五入或約成整百數 400，再乘以 3。
+                </div>
+                <div id="feedback-4-1" class="text-sm font-bold hidden"></div>
+            </div>
+
+            <!-- 例題 2 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start gap-2">
+                    <span class="bg-rose-50 text-rose-700 text-xs font-bold px-2.5 py-1 rounded-md">例題 2 (超商買巧克力)</span>
+                    <button onclick="speakText('姐姐給一百五十元，買六盒巧克力，每盒三十二元，錢夠不夠？')" class="shrink-0 text-rose-700 text-sm flex items-center space-x-1 bg-pastelPink px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-volume-high"></i> <span>聽題目</span>
+                    </button>
+                </div>
+                <p class="text-base font-bold text-gray-800">姐姐給 <span class="text-rose-700 text-lg">150</span> 元，買 <span class="text-rose-700 text-lg">6</span> 盒巧克力（每盒 <span class="text-rose-700 text-lg">32</span> 元），錢夠不夠？</p>
+
+                <button onclick="toggleAnswer('ans-box-4-2', this)" class="w-full bg-pastelPink hover:bg-rose-100 text-rose-700 py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center space-x-2 transition">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>點擊查看解答與直式步驟</span>
+                </button>
+
+                <div id="ans-box-4-2" class="hidden space-y-3 pt-2 border-t border-gray-100">
+                    <div class="bg-gray-50 p-3 rounded-xl text-sm text-gray-700 space-y-1">
+                        <p>💡 <b>估算判斷</b>：</p>
+                        <p>• 32 元大約是 30 元。</p>
+                        <p>• 30 × 6 = 180 元，已經超過 150 元（實際是 192 元）。</p>
+                        <p>• 所以錢<b>不夠</b>！</p>
+                        <button onclick="speakText('解答說明：三十二元大約三十元，三十乘以六等於一百八十元，大於一百五十元，所以錢不夠。')" class="mt-1 text-rose-700 text-xs bg-pastelPink px-2 py-0.5 rounded-md flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high"></i> <span>朗讀解答</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100 flex items-center space-x-2">
+                    <select id="ans-4-2" class="flex-1 min-w-0 border border-gray-300 rounded-xl px-3 py-2 text-base bg-white focus:outline-none focus:border-rose-500">
+                        <option value="">請選擇夠或不夠</option>
+                        <option value="夠">夠</option>
+                        <option value="不夠">不夠</option>
+                    </select>
+                    <button onclick="checkSelectAnswer('4-2', '不夠')" class="bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm active:scale-95">送出答案</button>
+                    <button onclick="showHint('hint-4-2')" class="bg-pastelYellow text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">提示</button>
+                </div>
+                <div id="hint-4-2" class="hidden text-xs text-amber-800 bg-pastelYellow p-2 rounded-lg">
+                    提示：用 30 × 6 = 180，比 150 還多，因此不夠。
+                </div>
+                <div id="feedback-4-2" class="text-sm font-bold hidden"></div>
+            </div>
+        </div>
+
+        <!-- 回首頁 -->
+        <div class="text-center pt-6">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-gray-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-gray-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 底部語音控制台 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 px-3 z-30 shadow-lg">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="shrink-0 w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span id="speech-status" class="text-xs font-bold text-gray-600 truncate">語音準備就緒</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="adjustSpeed(-0.2)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">
+                    <i class="fa-solid fa-gauge-low"></i> 慢速
+                </button>
+                <button onclick="adjustSpeed(0.2)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">
+                    <i class="fa-solid fa-gauge-high"></i> 快速
+                </button>
+                <button onclick="stopSpeech()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">
+                    <i class="fa-solid fa-stop"></i> 停止
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 答對彈窗 -->
+    <div id="success-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-2xl">
+            <div class="w-16 h-16 bg-pastelGreen text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <h3 class="text-xl font-black text-gray-800">太棒了！答對囉！</h3>
+            <p class="text-sm text-gray-600">你真聰明，乘法學得嚇嚇叫！繼續保持！</p>
+            <button onclick="closeModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-md transition active:scale-95">繼續挑戰</button>
+        </div>
+    </div>
+
+    <!-- 一般提示視窗（取代 alert） -->
+    <div id="notice-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-2xl">
+            <div class="text-4xl">📢</div>
+            <p id="notice-text" class="text-sm text-gray-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full bg-brandBlue text-white py-3 rounded-xl font-bold shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        const IDLE_TEXT = '語音準備就緒';
+        let currentSpeechRate = 0.9;
+        let currentUtterance = null;
+
+        // 離開頁面時停止朗讀
+        window.addEventListener('pagehide', stopSpeech);
+
+        // 按 Enter 送出答案
+        document.querySelectorAll('input[id^="ans-"]').forEach(input => {
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const submit = input.parentElement.querySelector('button[onclick^="checkAnswer"]');
+                    if (submit) submit.click();
+                }
+            });
+        });
+
+        // 切換單元
+        function switchTab(unitId) {
+            document.querySelectorAll('.unit-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab', 'bg-pastelBlue', 'text-brandBlue');
+                btn.classList.add('text-gray-600', 'bg-gray-100');
+            });
+
+            document.getElementById(unitId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + unitId);
+            activeBtn.classList.add('active-tab', 'bg-pastelBlue', 'text-brandBlue');
+            activeBtn.classList.remove('text-gray-600', 'bg-gray-100');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            speakText('切換至' + activeBtn.innerText.trim().replace(/^\d+\.\s*/, ''));
+        }
+
+        // 顯示/隱藏解答
+        function toggleAnswer(boxId, btnEl) {
+            const box = document.getElementById(boxId);
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                btnEl.innerHTML = '<i class="fa-solid fa-eye-slash"></i> <span>隱藏解答</span>';
+            } else {
+                box.classList.add('hidden');
+                btnEl.innerHTML = '<i class="fa-solid fa-eye"></i> <span>點擊查看解答與直式步驟</span>';
+            }
+        }
+
+        // 語音朗讀
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音朗讀功能');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = currentSpeechRate;
+            currentUtterance = utterance;
+
+            const status = document.getElementById('speech-status');
+            status.innerText = '正在朗讀中...';
+            // 只有最新一段朗讀結束才恢復狀態，避免被取消的舊語音蓋掉
+            const reset = () => {
+                if (currentUtterance === utterance) status.innerText = IDLE_TEXT;
+            };
+            utterance.onend = reset;
+            utterance.onerror = reset;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                currentUtterance = null;
+                window.speechSynthesis.cancel();
+                document.getElementById('speech-status').innerText = '語音已停止';
+            }
+        }
+
+        function adjustSpeed(change) {
+            currentSpeechRate = Math.round(Math.min(Math.max(currentSpeechRate + change, 0.5), 1.5) * 10) / 10;
+            speakText('語音速度已調整為' + (currentSpeechRate < 0.9 ? '較慢' : currentSpeechRate > 0.9 ? '較快' : '正常'));
+        }
+
+        // 朗讀目前單元的題目
+        function readAllQuestions() {
+            const activeUnit = document.querySelector('.unit-content:not(.hidden)');
+            const textElements = activeUnit.querySelectorAll('p.text-base, h2');
+            let fullText = '本頁題目如下：';
+            textElements.forEach(el => {
+                fullText += el.innerText.replace(/\s+/g, ' ') + '。 ';
+            });
+            speakText(fullText);
+        }
+
+        // 提示：顯示時一併朗讀提示內容
+        function showHint(hintId) {
+            const hintEl = document.getElementById(hintId);
+            hintEl.classList.toggle('hidden');
+            if (!hintEl.classList.contains('hidden')) {
+                speakText(hintEl.innerText.replace(/[×＋+]/g, m => m === '×' ? '乘以' : '加').replace(/=/g, '等於').replace(/\s+/g, ' '));
+            }
+        }
+
+        function setFeedback(el, kind, text) {
+            el.classList.remove('hidden');
+            const colors = { ok: 'text-emerald-600', bad: 'text-rose-500', warn: 'text-amber-600' };
+            el.className = 'text-sm font-bold mt-1 ' + colors[kind];
+            el.innerText = text;
+        }
+
+        // 檢查數字答案（special：特定答案的專屬提示，例如精確值）
+        function checkAnswer(questionId, correctAnswer, special) {
+            const raw = document.getElementById('ans-' + questionId).value.trim();
+            const feedbackEl = document.getElementById('feedback-' + questionId);
+
+            if (raw === '') {
+                setFeedback(feedbackEl, 'warn', '請先輸入答案喔！');
+                speakText('請先輸入答案喔');
+                return;
+            }
+
+            const value = Number(raw);
+            if (value === correctAnswer) {
+                setFeedback(feedbackEl, 'ok', '✨ 答對了！真厲害！');
+                showSuccessModal();
+            } else if (special && special[value] !== undefined) {
+                setFeedback(feedbackEl, 'warn', special[value]);
+                speakText(special[value]);
+            } else {
+                setFeedback(feedbackEl, 'bad', '❌ 答錯囉，再算算看！');
+                speakText('答錯囉，再算算看！');
+            }
+        }
+
+        // 檢查下拉選單答案
+        function checkSelectAnswer(questionId, correctAnswer) {
+            const value = document.getElementById('ans-' + questionId).value;
+            const feedbackEl = document.getElementById('feedback-' + questionId);
+
+            if (value === '') {
+                setFeedback(feedbackEl, 'warn', '請先選擇答案喔！');
+                speakText('請先選擇答案喔');
+                return;
+            }
+
+            if (value === correctAnswer) {
+                setFeedback(feedbackEl, 'ok', '✨ 答對了！真厲害！');
+                showSuccessModal();
+            } else {
+                setFeedback(feedbackEl, 'bad', '❌ 答錯囉，再想一想！');
+                speakText('答錯囉，再想一想！');
+            }
+        }
+
+        // 彈窗
+        function showSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            speakText('太棒了！答對囉！');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            stopSpeech();
+        }
+
+        function showNotice(msg) {
+            document.getElementById('notice-text').innerText = msg;
+            const m = document.getElementById('notice-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeNotice() {
+            const m = document.getElementById('notice-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

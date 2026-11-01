@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>趣味數學：毫米與公分互動語音學習網</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            blue: '#e0f2fe',
+                            green: '#d1fae5',
+                            yellow: '#fef3c7',
+                            pink: '#fce7f3',
+                            purple: '#ede9fe',
+                            orange: '#ffedd5',
+                            gray: '#f3f4f6',
+                            card: '#ffffff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', 'Varela Round', sans-serif;
+            background-color: #f8fafc;
+            touch-action: manipulation;
+        }
+        .bouncing-btn:active {
+            transform: scale(0.95);
+        }
+        /* 只設定形狀，背景與邊框顏色交給 Tailwind，避免被覆蓋 */
+        .speech-bubble {
+            position: relative;
+            border-radius: 1rem;
+            padding: 1rem;
+            border-width: 2px;
+            border-style: solid;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center pb-20">
+
+    <!-- 頂部標題列 -->
+    <header class="w-full max-w-md bg-white shadow-sm sticky top-0 z-40 px-3 py-3 flex items-center justify-between gap-2 border-b border-slate-100">
+        <div class="flex items-center gap-2 min-w-0">
+            <!-- 回首頁按鈕 -->
+            <a href="index.html" onclick="stopSpeech()"
+               class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                <span>🏠</span> <span>首頁</span>
+            </a>
+            <div class="min-w-0">
+                <h1 class="text-sm font-bold text-slate-700 tracking-wide leading-tight truncate">📐 趣味數學：毫米與公分</h1>
+                <p class="text-[11px] text-slate-400 truncate">第三課</p>
+            </div>
+        </div>
+        <button onclick="speakText('歡迎來到毫米與公分趣味學習樂園，點擊文字或按鈕就可以聽發音喔！')"
+                class="shrink-0 bg-pastel-blue hover:bg-sky-200 text-sky-800 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition shadow-sm whitespace-nowrap active:scale-95">
+            <span>🔊 導覽語音</span>
+        </button>
+    </header>
+
+    <!-- 主體內容區 -->
+    <main class="w-full max-w-md px-4 mt-4 flex-1 space-y-4">
+
+        <!-- 導航標籤 -->
+        <nav class="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-btn whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-sky-200 text-sky-900 shadow-sm transition">1. 認識毫米</button>
+            <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-btn whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-slate-100 text-slate-600 transition">2. 單位換算</button>
+            <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-btn whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-slate-100 text-slate-600 transition">3. 長度加減</button>
+            <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-btn whitespace-nowrap px-4 py-2 rounded-2xl font-bold text-sm bg-slate-100 text-slate-600 transition">4. 生活挑戰</button>
+        </nav>
+
+        <!-- 單元 1：認識毫米 -->
+        <section id="tab1" class="tab-content space-y-4">
+            <div class="speech-bubble bg-pastel-blue border-sky-200">
+                <div class="flex justify-between items-start gap-2">
+                    <h2 class="text-lg font-bold text-sky-900 flex items-center">
+                        <span class="mr-2">📏</span> 第一單元：認識毫米 (mm)
+                    </h2>
+                    <button onclick="speakText('尺上的1小格長是1毫米，英文用mm表示毫米。1公分等於10毫米。')" class="shrink-0 text-sky-700 bg-white p-1.5 rounded-full shadow hover:bg-sky-50">🔊</button>
+                </div>
+                <p class="mt-2 text-sm text-sky-900 leading-relaxed">
+                    小朋友，你手上鉛筆的筆心是不是很細呢？尺上的 <b>1 小格長是 1 毫米</b>，英文用 <b>mm</b> 表示。
+                </p>
+                <div class="mt-3 bg-white p-3 rounded-xl border border-sky-100 text-center">
+                    <div class="text-xl font-bold text-sky-600 mb-1">1 公分 = 10 毫米</div>
+                    <div class="text-xs text-slate-500">（10 小格和 1 公分一樣長）</div>
+                </div>
+            </div>
+
+            <!-- 互動測驗 1 -->
+            <div class="speech-bubble bg-pastel-yellow border-amber-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-amber-900 text-sm">💡 動腦想想看</span>
+                    <button onclick="speakText('動腦想想看：尺上2小格的長度是幾毫米？')" class="text-amber-700 bg-white p-1 rounded-full shadow">🔊</button>
+                </div>
+                <p class="text-sm text-amber-900 mb-3">尺上 <b>2 小格</b>的長度是幾毫米？</p>
+                <div id="options-1" class="grid grid-cols-2 gap-2">
+                    <button onclick="checkAnswer(this, false, '不對喔，1小格是1毫米，2小格是2毫米喔！')" class="opt-btn bg-white border border-amber-300 py-2.5 rounded-xl text-sm font-bold text-amber-800 hover:bg-amber-50 transition bouncing-btn">① 1 毫米</button>
+                    <button onclick="checkAnswer(this, true, '答對了！2小格就是2毫米！')" class="opt-btn bg-white border border-amber-300 py-2.5 rounded-xl text-sm font-bold text-amber-800 hover:bg-amber-50 transition bouncing-btn">② 2 毫米</button>
+                </div>
+                <div id="feedback-1" class="mt-2 text-sm font-bold text-center hidden"></div>
+            </div>
+        </section>
+
+        <!-- 單元 2：長度單位換算 -->
+        <section id="tab2" class="tab-content space-y-4 hidden">
+            <div class="speech-bubble bg-pastel-green border-emerald-200">
+                <div class="flex justify-between items-start gap-2">
+                    <h2 class="text-lg font-bold text-emerald-900 flex items-center">
+                        <span class="mr-2">🔄</span> 第二單元：公分與毫米的換算
+                    </h2>
+                    <button onclick="speakText('1公分等於10毫米。把公分換算成毫米，數字後面加一個0；把毫米換算成公分和毫米，看有幾個10就是幾公分幾毫米。')" class="shrink-0 text-emerald-700 bg-white p-1.5 rounded-full shadow">🔊</button>
+                </div>
+                <p class="mt-2 text-sm text-emerald-900 leading-relaxed">
+                    記住口訣：<b>1 公分 = 10 毫米</b>。<br>
+                    例如：5 公分 = 50 毫米。 62 毫米 = 6 公分 2 毫米。
+                </p>
+            </div>
+
+            <div class="speech-bubble bg-pastel-pink border-rose-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-rose-900 text-sm">✍️ 練習填填看</span>
+                    <button onclick="speakText('練習填填看：5公分4毫米等於多少毫米？')" class="text-rose-700 bg-white p-1 rounded-full shadow">🔊</button>
+                </div>
+                <p class="text-sm text-rose-900 mb-2"><b>5 公分 4 毫米 = ( ? ) 毫米</b></p>
+                <div class="flex space-x-2">
+                    <input type="number" inputmode="numeric" id="input-conv-1" placeholder="輸入數字" class="flex-1 min-w-0 bg-white border border-rose-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-400">
+                    <button onclick="checkConversion('input-conv-1', 54, '太棒了！5公分是50毫米，再加上4毫米就是54毫米！')" class="bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-sm shadow active:scale-95 transition">確定</button>
+                </div>
+                <div id="feedback-conv-1" class="mt-2 text-sm font-bold text-center hidden"></div>
+            </div>
+        </section>
+
+        <!-- 單元 3：長度加減法 -->
+        <section id="tab3" class="tab-content space-y-4 hidden">
+            <div class="speech-bubble bg-pastel-orange border-orange-200">
+                <div class="flex justify-between items-start gap-2">
+                    <h2 class="text-lg font-bold text-orange-900 flex items-center">
+                        <span class="mr-2">➕</span> 第三單元：直式加減法計算
+                    </h2>
+                    <button onclick="speakText('計算公分與毫米的加減法時，公分跟公分相加減，毫米跟毫米相加減。毫米滿10要向公分進位，不夠減時要退位。')" class="shrink-0 text-orange-700 bg-white p-1.5 rounded-full shadow">🔊</button>
+                </div>
+                <p class="mt-2 text-sm text-orange-900 leading-relaxed">
+                    計算時，<b>公分和公分對齊，毫米和毫米對齊</b>。<br>
+                    若毫米相加滿 10，記得向公分進位 1 喔！
+                </p>
+            </div>
+
+            <div class="speech-bubble bg-pastel-purple border-purple-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-purple-900 text-sm">🧮 計算題挑戰</span>
+                    <button onclick="speakText('計算題：6公分3毫米加上3公分4毫米等於多少？')" class="text-purple-700 bg-white p-1 rounded-full shadow">🔊</button>
+                </div>
+                <p class="text-sm text-purple-900 mb-2 font-bold">6 公分 3 毫米 + 3 公分 4 毫米 = ?</p>
+                <div class="space-y-2">
+                    <div class="flex space-x-2">
+                        <input type="number" inputmode="numeric" id="input-cm" placeholder="公分" class="w-1/2 min-w-0 bg-white border border-purple-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <input type="number" inputmode="numeric" id="input-mm" placeholder="毫米" class="w-1/2 min-w-0 bg-white border border-purple-300 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    </div>
+                    <button onclick="checkAddition()" class="w-full bg-purple-400 hover:bg-purple-500 text-white font-bold py-2 rounded-xl text-sm shadow active:scale-95 transition">提交答案</button>
+                </div>
+                <div id="feedback-add" class="mt-2 text-sm font-bold text-center hidden"></div>
+            </div>
+        </section>
+
+        <!-- 單元 4：生活情境挑戰 -->
+        <section id="tab4" class="tab-content space-y-4 hidden">
+            <div class="speech-bubble bg-pastel-card border-slate-200">
+                <div class="flex justify-between items-start gap-2">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                        <span class="mr-2">🌟</span> 第四單元：生活情境與素養挑戰
+                    </h2>
+                    <button onclick="speakText('馬達加斯加迷你變色龍的長度是29毫米，也可以說是2公分9毫米。')" class="shrink-0 text-slate-600 bg-slate-100 p-1.5 rounded-full shadow">🔊</button>
+                </div>
+                <div class="mt-3 space-y-3">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="font-bold text-sm text-slate-700 mb-1">🦎 變色龍的身長問題</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            世界上最小的變色龍是馬達加斯加迷你變色龍，牠的長度是 29 毫米。<br>
+                            阿達說：「是 2 公分 9 毫米」；小美說：「是 29 毫米」。誰說得對呢？
+                        </p>
+                        <div class="mt-2 flex space-x-2">
+                            <button onclick="speakText('兩個人都對！因為2公分等於20毫米，20毫米加9毫米就是29毫米！')" class="bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-bold px-3 py-1.5 rounded-lg transition">🔊 聽解答與說明</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="font-bold text-sm text-slate-700 mb-1">📚 字典與故事書厚度</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            字典的厚度是 6 公分 5 毫米，比故事書厚 4 公分 2 毫米。<br>
+                            故事書的厚度是多少呢？
+                        </p>
+                        <div class="mt-2">
+                            <button onclick="speakText('用字典的6公分5毫米，減掉4公分2毫米，等於2公分3毫米！')" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-lg transition text-left">🔊 聽解題過程 (6公分5毫米 - 4公分2毫米 = 2公分3毫米)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 回首頁 -->
+        <div class="text-center pt-2">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+
+    </main>
+
+    <!-- 底部語音播放狀態條 -->
+    <footer class="w-full max-w-md fixed bottom-0 left-1/2 -translate-x-1/2 z-40 bg-white/90 backdrop-blur border-t border-slate-200 py-2 px-4 flex justify-between items-center text-xs text-slate-500">
+        <span id="speech-status">💡 點擊「🔊」隨時聽語音導讀</span>
+        <button onclick="stopSpeech()" class="bg-rose-100 text-rose-700 px-2 py-1 rounded font-bold hover:bg-rose-200 transition">停止發音</button>
+    </footer>
+
+    <!-- 提示視窗（取代 alert） -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center shadow-xl space-y-4">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-sm text-slate-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full py-3 bg-sky-500 text-white font-bold rounded-2xl text-sm shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        const IDLE_TEXT = '💡 點擊「🔊」隨時聽語音導讀';
+        let currentUtterance = null;
+
+        // 離開頁面時停止朗讀
+        window.addEventListener('pagehide', stopSpeech);
+
+        // 分頁切換
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-sky-200', 'text-sky-900', 'shadow-sm');
+                el.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('bg-slate-100', 'text-slate-600');
+            activeBtn.classList.add('bg-sky-200', 'text-sky-900', 'shadow-sm');
+
+            const titles = {
+                tab1: '第一單元：認識毫米',
+                tab2: '第二單元：公分與毫米的換算',
+                tab3: '第三單元：長度加減法計算',
+                tab4: '第四單元：生活情境與素養挑戰'
+            };
+            speakText(titles[tabId]);
+        }
+
+        // 語音朗讀
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音功能。');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = 0.9;
+            currentUtterance = utterance;
+
+            const status = document.getElementById('speech-status');
+            status.innerText = '🗣️ 正在朗讀...';
+            // 只有最新一段朗讀結束時才恢復狀態，避免被被取消的舊語音蓋掉
+            const reset = () => {
+                if (currentUtterance === utterance) status.innerText = IDLE_TEXT;
+            };
+            utterance.onend = reset;
+            utterance.onerror = reset;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                currentUtterance = null;
+                window.speechSynthesis.cancel();
+                document.getElementById('speech-status').innerText = '💡 已停止發音';
+            }
+        }
+
+        // 提示視窗
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            const m = document.getElementById('noticeModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeNotice() {
+            const m = document.getElementById('noticeModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function setFeedback(el, ok, text) {
+            el.classList.remove('hidden');
+            el.className = 'mt-2 text-sm font-bold text-center ' + (ok ? 'text-emerald-600' : 'text-rose-600');
+            el.innerText = (ok ? '🎉 ' : '❌ ') + text;
+        }
+
+        // 單選題
+        function checkAnswer(btn, isCorrect, message) {
+            // 先把同一題的選項恢復原樣，避免前一次的紅綠色殘留
+            btn.parentElement.querySelectorAll('.opt-btn').forEach(b => {
+                b.classList.remove('bg-emerald-100', 'border-emerald-400', 'bg-rose-100', 'border-rose-400');
+                b.classList.add('bg-white', 'border-amber-300');
+            });
+            btn.classList.remove('bg-white', 'border-amber-300');
+            if (isCorrect) {
+                btn.classList.add('bg-emerald-100', 'border-emerald-400');
+            } else {
+                btn.classList.add('bg-rose-100', 'border-rose-400');
+            }
+            setFeedback(document.getElementById('feedback-1'), isCorrect, message);
+            speakText(message);
+        }
+
+        // 換算題
+        function checkConversion(inputId, correctVal, successMsg) {
+            const raw = document.getElementById(inputId).value.trim();
+            const feedbackEl = document.getElementById('feedback-conv-1');
+            if (raw === '') {
+                showNotice('請先輸入答案喔！');
+                return;
+            }
+            if (parseInt(raw, 10) === correctVal) {
+                setFeedback(feedbackEl, true, successMsg);
+                speakText(successMsg);
+            } else {
+                setFeedback(feedbackEl, false, '答案不對喔！想一想，5公分是50毫米，再加上4毫米是多少呢？');
+                speakText('答案不對喔，再想一想！');
+            }
+        }
+
+        // 加法題（6公分3毫米 + 3公分4毫米 = 9公分7毫米）
+        function checkAddition() {
+            const cmRaw = document.getElementById('input-cm').value.trim();
+            const mmRaw = document.getElementById('input-mm').value.trim();
+            const feedbackEl = document.getElementById('feedback-add');
+            if (cmRaw === '' || mmRaw === '') {
+                showNotice('公分和毫米兩格都要填喔！');
+                return;
+            }
+            if (parseInt(cmRaw, 10) === 9 && parseInt(mmRaw, 10) === 7) {
+                setFeedback(feedbackEl, true, '太棒了！答案就是 9 公分 7 毫米！');
+                speakText('太棒了！答案就是9公分7毫米！');
+            } else {
+                setFeedback(feedbackEl, false, '再算算看：公分和公分相加，毫米和毫米相加，再合起來喔！');
+                speakText('再算算看，公分和公分相加，毫米和毫米相加，再合起來喔！');
+            }
+        }
+
+        // 按 Enter 送出
+        document.getElementById('input-conv-1').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.querySelector('#tab2 button[onclick^="checkConversion"]').click();
+        });
+        ['input-cm', 'input-mm'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') checkAddition();
+            });
+        });
+    </script>
+</body>
+</html>

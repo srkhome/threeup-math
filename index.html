@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小豆豆數學樂園｜三年級數學語音學習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7FB;
+            color: #2D3748;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 漂浮的數學符號 */
+        @keyframes floaty {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(6deg); }
+        }
+        .floaty { animation: floaty 4s ease-in-out infinite; }
+        .floaty.d1 { animation-delay: -1s; }
+        .floaty.d2 { animation-delay: -2s; }
+        .floaty.d3 { animation-delay: -3s; }
+        @keyframes pop {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop { animation: pop 0.4s ease-out both; }
+        @media (prefers-reduced-motion: reduce) {
+            .floaty, .pop { animation: none; }
+        }
+        .lesson-card { transition: transform .2s ease, box-shadow .2s ease; }
+        .lesson-card:hover { transform: translateY(-4px); }
+        .lesson-card:active { transform: scale(.98); }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <!-- ================= 頁首 ================= -->
+    <header class="relative overflow-hidden bg-gradient-to-br from-sky-400 via-indigo-400 to-purple-400 text-white">
+        <!-- 漂浮符號 -->
+        <span class="floaty absolute top-4 left-4 text-3xl opacity-60 select-none">➕</span>
+        <span class="floaty d1 absolute top-10 right-6 text-3xl opacity-60 select-none">✖️</span>
+        <span class="floaty d2 absolute bottom-6 left-8 text-3xl opacity-50 select-none">➖</span>
+        <span class="floaty d3 absolute bottom-4 right-10 text-3xl opacity-50 select-none">📐</span>
+        <span class="floaty d2 absolute top-3 left-1/2 text-2xl opacity-40 select-none">📏</span>
+
+        <div class="relative max-w-3xl mx-auto px-5 py-8 text-center">
+            <div class="pop w-24 h-24 mx-auto rounded-full bg-white/95 shadow-lg flex items-center justify-center text-6xl">🎒</div>
+            <h1 class="mt-4 text-3xl sm:text-4xl font-black tracking-wide drop-shadow">小豆豆數學樂園</h1>
+            <p class="mt-1 text-base sm:text-lg font-bold text-white/90">三年級數學 · 語音互動學習</p>
+
+            <div class="mt-4 flex flex-wrap justify-center gap-2 text-xs sm:text-sm font-bold">
+                <span class="bg-white/25 backdrop-blur px-3 py-1.5 rounded-full">🔊 語音朗讀</span>
+                <span class="bg-white/25 backdrop-blur px-3 py-1.5 rounded-full">🎤 語音回答</span>
+                <span class="bg-white/25 backdrop-blur px-3 py-1.5 rounded-full">⭐ 闖關測驗</span>
+            </div>
+
+            <button onclick="speak('歡迎來到小豆豆數學樂園！請選一個課程，開始快樂學數學吧！')"
+                    class="mt-5 inline-flex items-center gap-2 bg-white text-indigo-600 font-black px-5 py-2.5 rounded-full shadow-md active:scale-95 transition">
+                🔊 聽小豆豆說歡迎
+            </button>
+        </div>
+
+        <!-- 底部波浪 -->
+        <svg class="block w-full" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" style="height:28px">
+            <path d="M0,20 C240,50 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z" fill="#F4F7FB"/>
+        </svg>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 -mt-2 space-y-5">
+
+        <!-- 學習進度 -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4">
+            <div class="flex items-center justify-between text-sm font-bold text-slate-600">
+                <span>🌟 我的學習足跡</span>
+                <span><span id="visitedCount">0</span> / 5 課</span>
+            </div>
+            <div class="mt-2 w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-gradient-to-r from-amber-300 to-orange-400 rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+            <p id="progressHint" class="mt-2 text-xs text-slate-400 font-medium">點選下面的課程卡片，開始第一堂課吧！</p>
+        </section>
+
+        <!-- ================= 課程卡片 ================= -->
+        <section>
+            <h2 class="text-lg font-black text-slate-700 mb-3 px-1">📚 選擇課程</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <!-- 第一課：10000以內的數 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-sky-100 overflow-hidden" data-lesson="1">
+                    <a href="lesson1.html" class="block" onclick="markVisited(1)">
+                        <div class="bg-gradient-to-br from-sky-100 to-blue-200 p-3">
+                            <!-- 數線與青蛙 -->
+                            <svg viewBox="0 0 160 90" class="w-full h-28" role="img" aria-label="數線上的青蛙">
+                                <line x1="12" y1="62" x2="148" y2="62" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+                                <g stroke="#0284c7" stroke-width="2" stroke-linecap="round">
+                                    <line x1="24" y1="55" x2="24" y2="69"/>
+                                    <line x1="52" y1="58" x2="52" y2="66"/>
+                                    <line x1="80" y1="55" x2="80" y2="69"/>
+                                    <line x1="108" y1="58" x2="108" y2="66"/>
+                                    <line x1="136" y1="55" x2="136" y2="69"/>
+                                </g>
+                                <g font-size="10" font-weight="700" fill="#075985" text-anchor="middle">
+                                    <text x="24" y="82">0</text>
+                                    <text x="80" y="82">5000</text>
+                                    <text x="136" y="82">10000</text>
+                                </g>
+                                <path d="M28 44 Q54 6 78 44" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+                                <text x="12" y="46" font-size="22">🐸</text>
+                                <text x="70" y="30" font-size="14">⭐</text>
+                                <text x="118" y="46" font-size="16" font-weight="900" fill="#0369a1">&gt; &lt; =</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-sky-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 1 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">10000 以內的數</h3>
+                            <p class="text-sm text-slate-500 font-medium">數線、比大小、位值與錢幣換算</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full">🐸 數線</span>
+                                <span class="bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full">⚖️ 大於小於</span>
+                                <span class="bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full">🪙 錢幣</span>
+                            </div>
+                            <div class="pt-1 text-sky-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第一課，一萬以內的數。學習數線、比大小、位值與錢幣換算。')"
+                            class="absolute top-2 right-2 bg-white/90 text-sky-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第一課">🔊</button>
+                </div>
+
+                <!-- 第二課：三、四位數加減法 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-emerald-100 overflow-hidden" data-lesson="2">
+                    <a href="lesson2.html" class="block" onclick="markVisited(2)">
+                        <div class="bg-gradient-to-br from-emerald-100 to-green-200 p-3">
+                            <!-- 直式加法 -->
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="直式加法">
+                                <circle cx="30" cy="32" r="14" fill="#10b981"/>
+                                <text x="30" y="39" font-size="20" font-weight="900" fill="#fff" text-anchor="middle">+</text>
+                                <circle cx="30" cy="72" r="14" fill="#f97316"/>
+                                <text x="30" y="79" font-size="22" font-weight="900" fill="#fff" text-anchor="middle">−</text>
+                                <g font-family="ui-monospace, Menlo, Consolas, monospace" font-weight="700">
+                                    <text x="78" y="24" font-size="11" fill="#f59e0b" text-anchor="middle">1</text>
+                                    <text x="89" y="24" font-size="11" fill="#f59e0b" text-anchor="middle">1</text>
+                                    <text x="124" y="44" font-size="18" fill="#065f46" text-anchor="end">752</text>
+                                    <text x="124" y="64" font-size="18" fill="#065f46" text-anchor="end">+376</text>
+                                    <text x="124" y="92" font-size="18" fill="#047857" text-anchor="end">1128</text>
+                                </g>
+                                <line x1="68" y1="70" x2="128" y2="70" stroke="#065f46" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-emerald-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 2 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">三、四位數加減法</h3>
+                            <p class="text-sm text-slate-500 font-medium">進位、退位、連續退位與估算</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">➕ 進位</span>
+                                <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">➖ 退位</span>
+                                <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">🚂 生活應用</span>
+                            </div>
+                            <div class="pt-1 text-emerald-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第二課，三四位數的加減法。學習進位、退位與估算。')"
+                            class="absolute top-2 right-2 bg-white/90 text-emerald-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第二課">🔊</button>
+                </div>
+
+                <!-- 第三課：毫米與公分 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-amber-100 overflow-hidden" data-lesson="3">
+                    <a href="lesson3.html" class="block" onclick="markVisited(3)">
+                        <div class="bg-gradient-to-br from-amber-100 to-yellow-200 p-3">
+                            <!-- 尺 -->
+                            <svg viewBox="0 0 160 90" class="w-full h-28" role="img" aria-label="尺與毫米刻度">
+                                <rect x="10" y="30" width="140" height="34" rx="5" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+                                <g stroke="#92400e" stroke-width="1.5" stroke-linecap="round">
+                                    <line x1="20" y1="30" x2="20" y2="48"/>
+                                    <line x1="32" y1="30" x2="32" y2="38"/>
+                                    <line x1="44" y1="30" x2="44" y2="38"/>
+                                    <line x1="56" y1="30" x2="56" y2="38"/>
+                                    <line x1="68" y1="30" x2="68" y2="38"/>
+                                    <line x1="80" y1="30" x2="80" y2="43"/>
+                                    <line x1="92" y1="30" x2="92" y2="38"/>
+                                    <line x1="104" y1="30" x2="104" y2="38"/>
+                                    <line x1="116" y1="30" x2="116" y2="38"/>
+                                    <line x1="128" y1="30" x2="128" y2="38"/>
+                                    <line x1="140" y1="30" x2="140" y2="48"/>
+                                </g>
+                                <g font-size="9" font-weight="700" fill="#78350f" text-anchor="middle">
+                                    <text x="20" y="59">0</text>
+                                    <text x="140" y="59">1 公分</text>
+                                </g>
+                                <path d="M20 22 L140 22" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M20 18 L20 26 M140 18 L140 26" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                                <text x="80" y="16" font-size="10" font-weight="900" fill="#dc2626" text-anchor="middle">10 毫米</text>
+                                <text x="80" y="84" font-size="13" font-weight="900" fill="#92400e" text-anchor="middle">1 公分 = 10 毫米</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-amber-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 3 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">毫米與公分</h3>
+                            <p class="text-sm text-slate-500 font-medium">認識毫米、單位換算與長度加減</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">📏 毫米</span>
+                                <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">🔄 換算</span>
+                                <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">🦎 小動物</span>
+                            </div>
+                            <div class="pt-1 text-amber-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第三課，毫米與公分。認識毫米，學習單位換算與長度的加減。')"
+                            class="absolute top-2 right-2 bg-white/90 text-amber-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第三課">🔊</button>
+                </div>
+
+                <!-- 第四課：乘法 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-purple-100 overflow-hidden" data-lesson="4">
+                    <a href="lesson4.html" class="block" onclick="markVisited(4)">
+                        <div class="bg-gradient-to-br from-purple-100 to-fuchsia-200 p-3">
+                            <!-- 乘法點陣 -->
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="3乘4的點陣">
+                                <g fill="#a855f7">
+                                    <circle cx="22" cy="20" r="8"/><circle cx="44" cy="20" r="8"/><circle cx="66" cy="20" r="8"/><circle cx="88" cy="20" r="8"/>
+                                </g>
+                                <g fill="#c084fc">
+                                    <circle cx="22" cy="44" r="8"/><circle cx="44" cy="44" r="8"/><circle cx="66" cy="44" r="8"/><circle cx="88" cy="44" r="8"/>
+                                </g>
+                                <g fill="#d946ef">
+                                    <circle cx="22" cy="68" r="8"/><circle cx="44" cy="68" r="8"/><circle cx="66" cy="68" r="8"/><circle cx="88" cy="68" r="8"/>
+                                </g>
+                                <text x="55" y="94" font-size="10" font-weight="700" fill="#7e22ce" text-anchor="middle">3 排，每排 4 個</text>
+                                <text x="130" y="38" font-size="18" font-weight="900" fill="#6b21a8" text-anchor="middle">3 × 4</text>
+                                <text x="130" y="62" font-size="18" font-weight="900" fill="#be185d" text-anchor="middle">= 12</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-purple-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 4 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">乘法</h3>
+                            <p class="text-sm text-slate-500 font-medium">二、三位數乘一位數與兩步驟問題</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">✖️ 直式乘法</span>
+                                <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">🍰 買東西</span>
+                                <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">🔍 估算</span>
+                            </div>
+                            <div class="pt-1 text-purple-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第四課，乘法。學習二位數與三位數乘以一位數，還有兩步驟的應用問題。')"
+                            class="absolute top-2 right-2 bg-white/90 text-purple-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第四課">🔊</button>
+                </div>
+
+                <!-- 第五課：角與圖形 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-rose-100 overflow-hidden sm:col-span-2" data-lesson="5">
+                    <a href="lesson5.html" class="block" onclick="markVisited(5)">
+                        <div class="bg-gradient-to-br from-rose-100 to-pink-200 p-3">
+                            <!-- 角與圖形 -->
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="角、正方形與長方形">
+                                <!-- 角 -->
+                                <path d="M22 18 L22 78 L82 78" fill="none" stroke="#e11d48" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="22" y="66" width="12" height="12" fill="none" stroke="#e11d48" stroke-width="2"/>
+                                <path d="M22 78 L72 40" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/>
+                                <path d="M48 78 A26 26 0 0 0 42 60" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                                <text x="52" y="92" font-size="10" font-weight="900" fill="#be123c">直角 ∟</text>
+                                <!-- 正方形 -->
+                                <rect x="98" y="14" width="30" height="30" rx="2" fill="#fda4af" stroke="#e11d48" stroke-width="2.5"/>
+                                <!-- 長方形 -->
+                                <rect x="96" y="56" width="52" height="28" rx="2" fill="#fbcfe8" stroke="#db2777" stroke-width="2.5"/>
+                                <text x="113" y="34" font-size="9" font-weight="700" fill="#9f1239" text-anchor="middle">正</text>
+                                <text x="122" y="74" font-size="9" font-weight="700" fill="#9d174d" text-anchor="middle">長方形</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-rose-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 5 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">角與圖形</h3>
+                            <p class="text-sm text-slate-500 font-medium">認識角、直角銳角鈍角、正方形與長方形</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full">📐 角</span>
+                                <span class="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full">🟦 正方形</span>
+                                <span class="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full">▭ 長方形</span>
+                            </div>
+                            <div class="pt-1 text-rose-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第五課，角與圖形。認識角、直角銳角鈍角，還有正方形與長方形的特性。')"
+                            class="absolute top-2 right-2 bg-white/90 text-rose-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第五課">🔊</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 小叮嚀 -->
+        <section class="bg-amber-50 border border-amber-100 rounded-3xl p-4 flex items-start gap-3">
+            <div class="text-3xl">🐸</div>
+            <div class="text-sm text-amber-900 font-medium leading-relaxed">
+                <b>小豆豆叮嚀：</b>每一課都可以按喇叭聽老師講解，也可以用說的來回答問題。答對越多，得到的星星越多喔！
+            </div>
+        </section>
+
+        <div class="text-center pt-2 space-y-2">
+            <button onclick="resetProgress()" class="text-xs text-slate-400 underline underline-offset-2 active:text-slate-600">清除學習足跡</button>
+            <p class="text-xs text-slate-400 font-medium">小豆豆數學樂園 · 專為國小學童設計 🎒</p>
+        </div>
+    </main>
+
+    <script>
+        const KEY = 'mathVisitedLessons';
+        const TOTAL = 5;
+
+        // ---------- 語音 ----------
+        function speak(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-TW';
+            u.rate = 0.9;
+            window.speechSynthesis.speak(u);
+        }
+        window.addEventListener('pagehide', () => {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        });
+
+        // ---------- 學習足跡（存在瀏覽器，讀取失敗也不影響使用） ----------
+        function getVisited() {
+            try {
+                const v = JSON.parse(localStorage.getItem(KEY));
+                return Array.isArray(v) ? v : [];
+            } catch (e) { return []; }
+        }
+
+        function markVisited(n) {
+            try {
+                const v = getVisited();
+                if (!v.includes(n)) {
+                    v.push(n);
+                    localStorage.setItem(KEY, JSON.stringify(v));
+                }
+            } catch (e) { /* 忽略 */ }
+        }
+
+        function resetProgress() {
+            try { localStorage.removeItem(KEY); } catch (e) { /* 忽略 */ }
+            renderProgress();
+        }
+
+        function renderProgress() {
+            const visited = getVisited();
+            document.querySelectorAll('.lesson-card').forEach(card => {
+                const n = Number(card.dataset.lesson);
+                const badge = card.querySelector('.visited');
+                if (badge) badge.classList.toggle('hidden', !visited.includes(n));
+            });
+
+            const count = visited.filter(n => n >= 1 && n <= TOTAL).length;
+            document.getElementById('visitedCount').innerText = count;
+            document.getElementById('progressBar').style.width = (count / TOTAL * 100) + '%';
+
+            const hint = document.getElementById('progressHint');
+            if (count === 0) hint.innerText = '點選下面的課程卡片，開始第一堂課吧！';
+            else if (count < TOTAL) hint.innerText = `太棒了！已經學了 ${count} 課，繼續加油！`;
+            else hint.innerText = '🏆 五課全部都學過囉！你是數學小達人！';
+        }
+
+        // 從課程頁按「上一頁」回來時也要更新
+        window.addEventListener('pageshow', renderProgress);
+        renderProgress();
+    </script>
+</body>
+</html>

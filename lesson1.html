@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小幫手數學冒險：10000以內的數與生活應用</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelBlue: '#E2E8F0',
+                        pastelGreen: '#E6F4EA',
+                        pastelYellow: '#FEF3C7',
+                        pastelPink: '#FCE7F3',
+                        pastelPurple: '#F3E8FF',
+                        pastelOrange: '#FFEDD5',
+                        brandBlue: '#3B82F6',
+                        brandGreen: '#10B981',
+                        brandPurple: '#8B5CF6'
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #334155;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .pop-animation {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.97); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- 頂部導航列 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 px-3 py-3 flex items-center justify-between gap-2 border-b border-slate-100">
+        <div class="flex items-center gap-2 min-w-0">
+            <!-- 回首頁按鈕 -->
+            <a href="index.html" onclick="stopSpeech()"
+               class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                <span>🏠</span> <span>首頁</span>
+            </a>
+            <div class="min-w-0">
+                <h1 class="text-sm font-bold text-slate-700 leading-tight truncate">數學冒險小幫手</h1>
+                <p class="text-[11px] text-slate-400 truncate">第一課 · 10000以內的數</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="toggleVoiceGuide()" id="voiceGuideBtn" class="bg-pastelBlue text-slate-700 px-2.5 py-1.5 rounded-full text-xs font-semibold shadow-sm flex items-center gap-1 active:scale-95 transition whitespace-nowrap">
+                <span id="voiceIcon">🔊</span> <span id="voiceText">語音：開</span>
+            </button>
+            <button onclick="openScoreModal()" class="bg-pastelYellow text-amber-800 px-2.5 py-1.5 rounded-full text-xs font-semibold shadow-sm flex items-center gap-1 active:scale-95 transition whitespace-nowrap">
+                <span>⭐</span> <span id="scoreBadge">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要內容區 -->
+    <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center">
+
+        <!-- 單元選擇選單 -->
+        <div id="menuView" class="space-y-4">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 text-center relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-7xl opacity-10">🌲</div>
+                <h2 class="text-lg font-bold text-slate-800 mb-1">請選擇要練習的數學單元</h2>
+                <p class="text-xs text-slate-500 mb-4">點擊下方卡片即可開始，支援語音朗讀與語音回答！</p>
+
+                <div class="grid grid-cols-1 gap-3 text-left">
+                    <button onclick="startUnit('numberLine')" class="group p-4 rounded-2xl bg-pastelGreen border border-emerald-100 hover:shadow-md transition flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-200 flex items-center justify-center text-2xl shadow-sm">🐸</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-700 text-sm">單元一：數線與青蛙跳躍</h3>
+                            <p class="text-xs text-slate-500">左右移動、加減法與距離計算</p>
+                        </div>
+                        <span class="text-emerald-500 font-bold group-hover:translate-x-1 transition">➔</span>
+                    </button>
+
+                    <button onclick="startUnit('comparison')" class="group p-4 rounded-2xl bg-pastelOrange border border-orange-100 hover:shadow-md transition flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-orange-200 flex items-center justify-center text-2xl shadow-sm">⛰️</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-700 text-sm">單元二：大於、小於與等於</h3>
+                            <p class="text-xs text-slate-500">高山高度與千位百位數字比較</p>
+                        </div>
+                        <span class="text-orange-500 font-bold group-hover:translate-x-1 transition">➔</span>
+                    </button>
+
+                    <button onclick="startUnit('placeValue')" class="group p-4 rounded-2xl bg-pastelPurple border border-purple-100 hover:shadow-md transition flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-200 flex items-center justify-center text-2xl shadow-sm">🧩</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-700 text-sm">單元三：位值板與千百十個位</h3>
+                            <p class="text-xs text-slate-500">數字卡合起來是多少、位值代表意義</p>
+                        </div>
+                        <span class="text-purple-500 font-bold group-hover:translate-x-1 transition">➔</span>
+                    </button>
+
+                    <button onclick="startUnit('money')" class="group p-4 rounded-2xl bg-pastelBlue border border-blue-100 hover:shadow-md transition flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-200 flex items-center justify-center text-2xl shadow-sm">🪙</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-700 text-sm">單元四：錢幣換算與購物應用</h3>
+                            <p class="text-xs text-slate-500">1000元、100元、10元與1元組合</p>
+                        </div>
+                        <span class="text-blue-500 font-bold group-hover:translate-x-1 transition">➔</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 練習測驗區 -->
+        <div id="quizView" class="hidden space-y-4 pop-animation">
+            <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-slate-100">
+                <button onclick="backToMenu()" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl hover:bg-slate-200 transition">
+                    ⬅ 返回主選單
+                </button>
+                <div class="text-xs font-bold text-slate-600" id="progressText"></div>
+                <div class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-xl">⭐ <span id="quizScore">0</span> 分</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 relative">
+                <div class="flex justify-between items-start gap-2 mb-3">
+                    <span id="unitTag" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800"></span>
+                    <button onclick="speakCurrentQuestion(true)" class="shrink-0 bg-blue-50 text-brandBlue p-2.5 rounded-2xl hover:bg-blue-100 transition flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95">
+                        <span class="text-base">🔊</span> 唸出題目
+                    </button>
+                </div>
+
+                <div id="questionVisual" class="my-4 p-4 bg-slate-50 rounded-2xl text-center flex flex-col items-center justify-center min-h-[110px] border border-slate-100"></div>
+
+                <h3 id="questionText" class="text-base font-bold text-slate-800 mb-4 leading-relaxed text-center"></h3>
+
+                <div id="optionsContainer" class="grid grid-cols-2 gap-2.5 mb-4"></div>
+
+                <div class="pt-2 border-t border-slate-100 flex flex-col items-center">
+                    <button id="micBtn" onclick="toggleSpeechRecognition()" class="w-full py-3 px-4 rounded-2xl bg-brandBlue text-white font-bold text-sm shadow-md hover:bg-blue-600 active:scale-[.98] transition flex items-center justify-center gap-2">
+                        <span class="text-lg">🎤</span> <span id="micBtnText">點擊說出答案（或直接點選項）</span>
+                    </button>
+                    <p id="speechResultHint" class="text-[11px] text-slate-400 mt-2 text-center">支援語音直接回答數字、選項名稱，或說「大於」「小於」「等於」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 完成結算畫面 -->
+        <div id="resultView" class="hidden space-y-4 pop-animation text-center">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <div class="text-6xl mb-3">🏆</div>
+                <h2 class="text-xl font-bold text-slate-800 mb-1">太棒了！完成挑戰！</h2>
+                <p class="text-sm text-slate-500 mb-4">你已經順利完成本單元的練習！</p>
+                <div class="bg-pastelYellow p-4 rounded-2xl mb-6 inline-block w-full">
+                    <div class="text-xs text-amber-700 font-semibold mb-1">本單元獲得積分</div>
+                    <div class="text-3xl font-black text-amber-800"><span id="finalScore">0</span> 分</div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="restartCurrentUnit()" class="flex-1 py-3 bg-brandBlue text-white rounded-2xl font-bold text-sm shadow-md active:scale-95 transition">
+                        再玩一次
+                    </button>
+                    <button onclick="backToMenu()" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm shadow-md active:scale-95 transition">
+                        返回選單
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="text-center py-4 text-xs text-slate-400 space-y-3">
+        <a href="index.html" onclick="stopSpeech()"
+           class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+            🏠 回到首頁
+        </a>
+        <div>數學冒險學習網頁 • 根據國小數學課本設計</div>
+    </footer>
+
+    <!-- 自訂訊息對話框 -->
+    <div id="messageModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center pop-animation shadow-xl">
+            <div id="modalIcon" class="text-4xl mb-2">🎉</div>
+            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 mb-1"></h3>
+            <p id="modalDesc" class="text-xs text-slate-500 mb-5 leading-relaxed"></p>
+            <button id="modalBtn" onclick="closeModal()" class="w-full py-3 bg-brandBlue text-white font-bold rounded-2xl text-sm shadow-md active:scale-95 transition">
+                繼續下一題
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 題庫 =================
+        const questionDatabase = {
+            numberLine: [
+                {
+                    title: "單元一：數線與青蛙跳躍",
+                    visualType: "numberLine",
+                    position: 3,
+                    move: 6,
+                    question: "小青蛙從 3 的位置，往右移動 6 格，會到哪一個數字上？",
+                    options: ["8", "9", "10", "7"],
+                    answer: "9",
+                    explanation: "在數線上，往右移是加法：3 + 6 = 9"
+                },
+                {
+                    title: "單元一：數線與青蛙跳躍",
+                    visualType: "numberLine",
+                    position: 9,
+                    move: -5,
+                    question: "毛毛蟲從 9 的位置，往左移動 5 格，會到哪一個數字上？",
+                    options: ["3", "5", "4", "6"],
+                    answer: "4",
+                    explanation: "在數線上，往左移是減法：9 - 5 = 4"
+                },
+                {
+                    title: "單元一：數線與青蛙跳躍",
+                    visualType: "numberLine",
+                    position: 8,
+                    move: 6,
+                    question: "有一隻青蛙停在數線上 8 的位置，向右跳了 6 格，會停在哪一個數字上？",
+                    options: ["13", "14", "15", "12"],
+                    answer: "14",
+                    explanation: "8 往右跳 6 格就是增加 6：8 + 6 = 14"
+                },
+                {
+                    title: "單元一：數線與青蛙跳躍",
+                    visualType: "numberLine",
+                    position: 14,
+                    move: -5,
+                    question: "接著上一題，青蛙又向左跳了 5 格，會停在哪一個數字上？",
+                    options: ["8", "10", "9", "7"],
+                    answer: "9",
+                    explanation: "14 往左跳 5 格就是減少 5：14 - 5 = 9"
+                },
+                {
+                    title: "單元一：數線間距與規律",
+                    visualType: "numberLineInterval",
+                    question: "觀察數線：每一格代表 2，從 0 開始向右數，第 3 格是數字多少？",
+                    options: ["4", "6", "8", "2"],
+                    answer: "6",
+                    explanation: "一格代表 2，第 3 格就是 2 + 2 + 2 = 6"
+                }
+            ],
+            comparison: [
+                {
+                    title: "單元二：大於、小於與等於",
+                    visualType: "comparison",
+                    question: "在 □ 裡面填入 >、< 或 =： 4001 □ 3999",
+                    options: [">", "<", "="],
+                    answer: ">",
+                    explanation: "比較千位，4000 比 3000 大，所以 4001 > 3999"
+                },
+                {
+                    title: "單元二：大於、小於與等於",
+                    visualType: "comparison",
+                    question: "在 □ 裡面填入 >、< 或 =： 10000 □ 10 個千",
+                    options: [">", "<", "="],
+                    answer: "=",
+                    explanation: "10 個千就是 10000，兩邊數量一樣大！"
+                },
+                {
+                    title: "單元二：高山高度比較",
+                    visualType: "mountain",
+                    question: "奇萊山高 3560 公尺，玉山高 3952 公尺。哪一座山比較高？",
+                    options: ["奇萊山", "玉山", "一樣高", "無法比較"],
+                    answer: "玉山",
+                    explanation: "比較千位與百位，3952 比 3560 大，所以玉山比較高 (3952 > 3560)"
+                },
+                {
+                    title: "單元二：位數大小比較",
+                    visualType: "comparison",
+                    question: "小霸尖山 3418 公尺和鹿山 2981 公尺，哪一個數比較小？用 < 號記錄看看。",
+                    options: ["3418 < 2981", "2981 < 3418", "3418 > 2981", "2981 = 3418"],
+                    answer: "2981 < 3418",
+                    explanation: "2981 的千位是 2，3418 的千位是 3，所以 2981 比較小。"
+                },
+                {
+                    title: "單元二：圖書館借書統計",
+                    visualType: "library",
+                    question: "圖書館 7 月借書 6232 本，8 月借書 6270 本，哪一個月借閱的本數比較多？",
+                    options: ["7月", "8月", "一樣多", "不確定"],
+                    answer: "8月",
+                    explanation: "千位、百位都一樣，比較十位：6270 的十位是 7，6232 的十位是 3，7 大於 3，所以 8 月較多。"
+                }
+            ],
+            placeValue: [
+                {
+                    title: "單元三：位值板與數字卡合起來",
+                    visualType: "blocks",
+                    question: "數字卡合起來是多少？（7個千、3個百、4個十、1個一）",
+                    options: ["7341", "7431", "3741", "1437"],
+                    answer: "7341",
+                    explanation: "千位是7、百位是3、十位是4、個位是1，合起來是 7341"
+                },
+                {
+                    title: "單元三：位值代表的意義",
+                    visualType: "placeValueBoard",
+                    question: "在 7275 中，兩個 7 所表示的數一樣多嗎？",
+                    options: ["一樣多", "不一樣多", "都是7", "無法判定"],
+                    answer: "不一樣多",
+                    explanation: "千位的 7 表示 7000，十位的 7 表示 70，數值不一樣。"
+                },
+                {
+                    title: "單元三：積木與位值轉換",
+                    visualType: "blocks",
+                    question: "10 個百合起來是 1000，那 3 個千、16個十和 2 個一合起來是多少？",
+                    options: ["3162", "3621", "3126", "3261"],
+                    answer: "3162",
+                    explanation: "16個十即 1百6十，3個千加 1百為 3100，加上 62 即 3162。"
+                },
+                {
+                    title: "單元三：數字讀法與拆解",
+                    visualType: "reading",
+                    question: "「四千零一」用數字記成：",
+                    options: ["4100", "4001", "4010", "4000"],
+                    answer: "4001",
+                    explanation: "百位與十位都是 0，記為 4001。"
+                },
+                {
+                    title: "單元三：連續遞減數序",
+                    visualType: "sequence",
+                    question: "按照順序填填看：8965 → 7965 → 6965 → 5965 → ？",
+                    options: ["4965", "3965", "5865", "6865"],
+                    answer: "4965",
+                    explanation: "千位每次減 1，下一個數是 4965。"
+                }
+            ],
+            money: [
+                {
+                    title: "單元四：錢幣換算與組合",
+                    visualType: "money",
+                    question: "爸爸買了一個 4235 元的帳篷，請問要怎麼付錢才會剛好？",
+                    options: ["4個千、2個百、3個十、5個一", "4個千、3個百、2個十", "2個千、4個百", "5個千"],
+                    answer: "4個千、2個百、3個十、5個一",
+                    explanation: "4235 元拆開為 4000元、200元、30元、5元。"
+                },
+                {
+                    title: "單元四：零錢組合",
+                    visualType: "money",
+                    question: "媽媽的皮包裡有 2 張 1000 元、4 張 100 元、6 個 10 元和 4 個 1 元，合起來是多少元？",
+                    options: ["2464元", "2644元", "2164元", "4264元"],
+                    answer: "2464元",
+                    explanation: "2000 + 400 + 60 + 4 = 2464 元。"
+                },
+                {
+                    title: "單元四：百元鈔票換算",
+                    visualType: "money",
+                    question: "20 張 100 元合起來是幾元？ 26 張 100 元合起來是幾元？",
+                    options: ["2000元，2600元", "200元，260元", "20000元，26000元", "1000元，1500元"],
+                    answer: "2000元，2600元",
+                    explanation: "20張100元是2000元，26張100元是2600元。"
+                },
+                {
+                    title: "單元四：多功能烤箱付款",
+                    visualType: "money",
+                    question: "媽媽買了 5063 元的烤箱，若用 1000 元、100 元、10 元和 1 元來付，需要幾個 1000 元？",
+                    options: ["5 個 1000 元", "4 個 1000 元", "6 個 1000 元", "3 個 1000 元"],
+                    answer: "5 個 1000 元",
+                    explanation: "5063 元千位是 5，所以需要 5 張 1000 元紙鈔。"
+                },
+                {
+                    title: "單元四：購物找零應用",
+                    visualType: "money",
+                    question: "休閒桌椅一組 2145 元，畫錢幣表示時，需要幾個 1000 元、幾個 100 元、幾個 10 元和幾個 1 元？",
+                    options: ["2個1000、1個100、4個10、5個1", "2個1000、4個100、1個10", "1個1000、2個100", "3個1000"],
+                    answer: "2個1000、1個100、4個10、5個1",
+                    explanation: "2145 分解為 2000（2張1000）+ 100（1張100）+ 40（4個10）+ 5（5個1）。"
+                }
+            ]
+        };
+
+        // ================= 狀態 =================
+        let currentUnitKey = '';
+        let currentQuestions = [];
+        let currentOptions = [];
+        let currentIndex = 0;
+        let score = 0;          // 本單元分數
+        let totalScore = 0;     // 本次開啟網頁累積總分
+        let isVoiceGuideOn = true;
+        let recognition = null;
+        let isListening = false;
+        let locked = false;     // 已作答、等待關閉視窗時鎖定，避免重複計分
+        let pendingClose = null;
+
+        // 離開頁面時停止語音
+        window.addEventListener('pagehide', stopSpeech);
+
+        // ================= 語音辨識初始化 =================
+        window.addEventListener('DOMContentLoaded', () => {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                document.getElementById('speechResultHint').innerText = "提示：您的瀏覽器不支援語音辨識，請直接點擊選項回答！";
+                return;
+            }
+            recognition = new SR();
+            recognition.lang = 'zh-TW';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript.trim();
+                document.getElementById('speechResultHint').innerText = `你說了：「${transcript}」`;
+                stopListeningState();
+                if (locked || !isQuizActive()) return;
+                checkVoiceAnswer(transcript);
+            };
+
+            recognition.onerror = function (event) {
+                stopListeningState();
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    document.getElementById('speechResultHint').innerText = "需要允許使用麥克風才能用說的回答，也可以直接點選項喔！";
+                } else if (event.error !== 'aborted') {
+                    document.getElementById('speechResultHint').innerText = "沒有聽清楚，請再試一次或直接點擊選項";
+                }
+            };
+
+            recognition.onend = function () { stopListeningState(); };
+        });
+
+        function isQuizActive() {
+            return !document.getElementById('quizView').classList.contains('hidden');
+        }
+
+        // ================= 單元流程 =================
+        function startUnit(unitKey) {
+            currentUnitKey = unitKey;
+            currentQuestions = [...questionDatabase[unitKey]];
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('menuView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            loadQuestion();
+        }
+
+        function backToMenu() {
+            stopSpeech();
+            abortListening();
+            locked = false;
+            hideModal();
+            document.getElementById('menuView').classList.remove('hidden');
+            document.getElementById('quizView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+        }
+
+        function restartCurrentUnit() {
+            startUnit(currentUnitKey);
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function loadQuestion() {
+            const q = currentQuestions[currentIndex];
+            locked = false;
+            document.getElementById('progressText').innerText = `第 ${currentIndex + 1} 題 / 共 ${currentQuestions.length} 題`;
+            document.getElementById('quizScore').innerText = score;
+            document.getElementById('scoreBadge').innerText = totalScore;
+            document.getElementById('unitTag').innerText = q.title;
+            document.getElementById('questionText').innerText = q.question;
+            document.getElementById('speechResultHint').innerText = "支援語音直接回答數字、選項名稱，或說「大於」「小於」「等於」";
+
+            renderVisual(q);
+
+            // 選項順序打亂（>、<、= 這類符號選項維持原順序）
+            const isSymbolSet = q.options.every(o => o.length === 1);
+            currentOptions = isSymbolSet ? [...q.options] : shuffle(q.options);
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            currentOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "py-3 px-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-2xl font-bold text-slate-700 text-sm shadow-sm active:scale-95 transition flex items-center justify-center text-center";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt);
+                container.appendChild(btn);
+            });
+
+            setTimeout(() => speakCurrentQuestion(false), 400);
+        }
+
+        // ================= 視覺輔助 =================
+        function renderVisual(q) {
+            const el = document.getElementById('questionVisual');
+
+            if (q.visualType === 'numberLine') {
+                const end = q.position + q.move;
+                const lo = Math.max(0, Math.min(q.position, end) - 2);
+                const hi = Math.max(q.position, end) + 2;
+                let ticks = '';
+                for (let n = lo; n <= hi; n++) {
+                    const isStart = n === q.position;
+                    ticks += `
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <span class="text-base h-5 leading-5">${isStart ? '🐸' : ''}</span>
+                            <div class="w-px h-2 bg-slate-400"></div>
+                            <span class="text-[11px] font-bold ${isStart ? 'text-emerald-700 bg-emerald-100 rounded px-1' : 'text-slate-500'}">${n}</span>
+                        </div>`;
+                }
+                const dirText = q.move > 0 ? `往右 ${q.move} 格 ➜` : `⬅ 往左 ${Math.abs(q.move)} 格`;
+                el.innerHTML = `
+                    <div class="text-xs text-slate-500 font-bold mb-1">數線（🐸 是起點 ${q.position}）</div>
+                    <div class="w-full border-t-2 border-slate-300 flex">${ticks}</div>
+                    <div class="mt-2 text-xs font-bold text-emerald-700">${dirText}</div>`;
+                return;
+            }
+
+            if (q.visualType === 'numberLineInterval') {
+                let ticks = '';
+                for (let i = 0; i <= 6; i++) {
+                    ticks += `
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <span class="text-base h-5 leading-5">${i === 0 ? '🐸' : ''}</span>
+                            <div class="w-px h-2 bg-slate-400"></div>
+                            <span class="text-[11px] font-bold text-slate-500">${i === 0 ? '0' : '·'}</span>
+                        </div>`;
+                }
+                el.innerHTML = `
+                    <div class="text-xs text-slate-500 font-bold mb-1">數線：每一格代表 2</div>
+                    <div class="w-full border-t-2 border-slate-300 flex">${ticks}</div>
+                    <div class="mt-2 text-xs font-bold text-emerald-700">從 0 開始，一格一格往右數</div>`;
+                return;
+            }
+
+            const map = {
+                comparison: ['⚖️', '比較大小：從最高位開始比'],
+                mountain: ['⛰️', '高山高度比較'],
+                library: ['📚', '圖書館借書量比較'],
+                blocks: ['🧩', '千、百、十、個位積木'],
+                placeValueBoard: ['🧮', '位值板：千　百　十　個'],
+                reading: ['🔤', '數字的讀法與記法'],
+                sequence: ['🔢', '找出數列的規律'],
+                money: ['🪙', '1000元、100元、10元、1元']
+            };
+            const [icon, label] = map[q.visualType] || ['📐', '數學動腦挑戰'];
+            el.innerHTML = `
+                <div class="text-4xl mb-1">${icon}</div>
+                <div class="text-sm font-bold text-slate-600">${label}</div>`;
+        }
+
+        // ================= 作答 =================
+        function handleAnswer(selectedOpt) {
+            if (locked) return;
+            locked = true;
+            abortListening();
+
+            const q = currentQuestions[currentIndex];
+            const isCorrect = (selectedOpt.trim() === q.answer.trim());
+            const isLast = currentIndex === currentQuestions.length - 1;
+
+            if (isCorrect) {
+                score += 20;
+                totalScore += 20;
+                document.getElementById('quizScore').innerText = score;
+                document.getElementById('scoreBadge').innerText = totalScore;
+                showModal({
+                    success: true,
+                    title: "太棒了！答對了！",
+                    desc: q.explanation,
+                    btn: isLast ? "看結果" : "繼續下一題",
+                    onClose: goNext
+                });
+                speakText("答對了！" + toSpeech(q.explanation));
+            } else {
+                showModal({
+                    success: false,
+                    title: "再想看看喔！",
+                    desc: `正確答案是：${q.answer}<br><span class="text-slate-400">${q.explanation}</span>`,
+                    btn: isLast ? "看結果" : "繼續下一題",
+                    onClose: goNext
+                });
+                speakText("答錯囉！正確答案是" + toSpeech(q.answer));
+            }
+        }
+
+        function goNext() {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            locked = false;
+            document.getElementById('quizView').classList.add('hidden');
+            document.getElementById('resultView').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = score;
+            speakText(`恭喜完成挑戰！這個單元得到 ${score} 分！`);
+        }
+
+        // ================= 語音答案比對 =================
+        const CN_DIGIT = { '零': 0, '〇': 0, '一': 1, '二': 2, '兩': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+        const CN_UNIT = { '十': 10, '百': 100, '千': 1000 };
+
+        // 中文數字 → 阿拉伯數字字串（例如 一千二百一十一 → 1211）
+        function cnToNum(str) {
+            if (!/[十百千萬万]/.test(str)) {
+                return str.split('').map(c => CN_DIGIT[c]).join('');
+            }
+            let total = 0, section = 0, num = 0;
+            for (const ch of str) {
+                if (ch in CN_DIGIT) {
+                    num = CN_DIGIT[ch];
+                } else if (ch in CN_UNIT) {
+                    section += (num || 1) * CN_UNIT[ch];
+                    num = 0;
+                } else { // 萬
+                    total += (section + num) * 10000;
+                    section = 0;
+                    num = 0;
+                }
+            }
+            return String(total + section + num);
+        }
+
+        // 正規化：符號與中文數字統一，保留以空白分隔的數字
+        function canonRaw(s) {
+            let t = s.toLowerCase()
+                .replace(/大[於于][號号]?/g, '>')
+                .replace(/小[於于][號号]?/g, '<')
+                .replace(/等[於于][號号]?/g, '=')
+                .replace(/[零〇一二兩两三四五六七八九十百千萬万]+/g, m => ' ' + cnToNum(m) + ' ');
+            t = t.replace(/(\d)[,，](?=\d)/g, '$1');
+            t = t.replace(/[\s,，、。.．？?！!：:；;「」『』"'（）()]+/g, ' ').trim();
+            return t;
+        }
+
+        function canon(s) { return canonRaw(s).replace(/ /g, ''); }
+        function nums(s) { return canonRaw(s).match(/\d+/g) || []; }
+        function sameList(a, b) { return a.length === b.length && a.every((v, i) => v === b[i]); }
+
+        function matchOption(transcript, options) {
+            // 1. 「第一個」「選項二」
+            const ord = transcript.match(/(?:第|選項|选项|選)\s*([一二三四1-4])/);
+            if (ord) {
+                const idx = (CN_DIGIT[ord[1]] || parseInt(ord[1], 10)) - 1;
+                if (options[idx]) return options[idx];
+            }
+
+            const tc = canon(transcript);
+
+            // 2. 完全相同
+            const exact = options.find(o => canon(o) === tc);
+            if (exact) return exact;
+
+            // 3. 數字列表相同（例如說「2464」或「兩千四百六十四」）
+            const tn = nums(transcript);
+            if (tn.length) {
+                const hits = options.filter(o => sameList(nums(o), tn));
+                if (hits.length === 1) return hits[0];
+
+                // 3b. 只說第一個數字，且能唯一對應
+                if (tn.length === 1) {
+                    const lead = options.filter(o => nums(o)[0] === tn[0]);
+                    if (lead.length === 1) return lead[0];
+                }
+            }
+
+            // 4. 文字選項包含（例如「玉山」「8月」）
+            const cands = options.filter(o => {
+                const oc = canon(o);
+                return oc.length >= 2 && /\D/.test(oc) && tc.includes(oc);
+            });
+            if (cands.length >= 1) {
+                return cands.sort((a, b) => canon(b).length - canon(a).length)[0];
+            }
+
+            // 5. 符號選項（> < =）
+            for (const sym of ['>', '<', '=']) {
+                if (options.includes(sym) && tc.includes(sym)) return sym;
+            }
+            return null;
+        }
+
+        function checkVoiceAnswer(transcript) {
+            const matched = matchOption(transcript, currentOptions);
+            if (matched) {
+                handleAnswer(matched);
+            } else {
+                document.getElementById('speechResultHint').innerText = `聽到「${transcript}」，但沒有對應到選項，請再試一次或直接點選項`;
+                speakText("沒有對應到選項，請再試一次。");
+            }
+        }
+
+        // ================= 彈窗 =================
+        function showModal(opts) {
+            document.getElementById('modalIcon').innerText = opts.icon || (opts.success ? "🎉" : "💪");
+            document.getElementById('modalTitle').innerText = opts.title;
+            document.getElementById('modalDesc').innerHTML = opts.desc;
+            document.getElementById('modalBtn').innerText = opts.btn || "好的";
+            pendingClose = opts.onClose || null;
+            const m = document.getElementById('messageModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function hideModal() {
+            const m = document.getElementById('messageModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+            pendingClose = null;
+        }
+
+        function closeModal() {
+            const cb = pendingClose;
+            hideModal();
+            stopSpeech();
+            if (cb) cb();
+        }
+
+        function openScoreModal() {
+            const unitInfo = isQuizActive() ? `<br>本單元目前：${score} 分` : '';
+            showModal({
+                icon: "⭐",
+                title: `累積 ${totalScore} 分`,
+                desc: `每答對一題得 20 分，繼續加油！${unitInfo}`,
+                btn: "關閉",
+                onClose: null
+            });
+        }
+
+        // ================= 語音朗讀 =================
+        // 把符號轉成適合朗讀的中文
+        function toSpeech(text) {
+            return text
+                .replace(/<br>/g, '，')
+                .replace(/□/g, '方格')
+                .replace(/→/g, '接著')
+                .replace(/>/g, '大於')
+                .replace(/</g, '小於')
+                .replace(/=/g, '等於')
+                .replace(/\+/g, '加')
+                .replace(/\s-\s/g, '減');
+        }
+
+        function speakCurrentQuestion(force) {
+            if (!currentQuestions.length || !isQuizActive()) return;
+            speakText(toSpeech(currentQuestions[currentIndex].question), force === true);
+        }
+
+        function speakText(text, force) {
+            if (!force && !isVoiceGuideOn) return;
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function toggleVoiceGuide() {
+            isVoiceGuideOn = !isVoiceGuideOn;
+            const btn = document.getElementById('voiceGuideBtn');
+            const base = "px-2.5 py-1.5 rounded-full text-xs font-semibold shadow-sm flex items-center gap-1 active:scale-95 transition whitespace-nowrap ";
+            if (isVoiceGuideOn) {
+                btn.className = base + "bg-pastelBlue text-slate-700";
+                document.getElementById('voiceIcon').innerText = "🔊";
+                document.getElementById('voiceText').innerText = "語音：開";
+                speakText("語音導覽已開啟");
+            } else {
+                btn.className = base + "bg-slate-200 text-slate-400";
+                document.getElementById('voiceIcon').innerText = "🔇";
+                document.getElementById('voiceText').innerText = "語音：關";
+                stopSpeech();
+            }
+        }
+
+        // ================= 麥克風控制 =================
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                showModal({
+                    icon: "📱",
+                    title: "無法使用語音辨識",
+                    desc: "您的裝置或瀏覽器不支援語音辨識，請直接點選項回答喔！",
+                    btn: "好的"
+                });
+                return;
+            }
+            if (locked) return;
+
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            stopSpeech(); // 避免麥克風錄到自己的朗讀聲
+            try {
+                recognition.start();
+                isListening = true;
+                document.getElementById('micBtn').className = "w-full py-3 px-4 rounded-2xl bg-emerald-500 text-white font-bold text-sm shadow-md pulse-ring transition flex items-center justify-center gap-2";
+                document.getElementById('micBtnText').innerText = "正在聆聽您的回答中...（再按一次可取消）";
+                document.getElementById('speechResultHint').innerText = "請清晰說出答案（例如：9、大於、玉山）";
+            } catch (e) {
+                console.error(e);
+                stopListeningState();
+            }
+        }
+
+        function abortListening() {
+            if (recognition && isListening) {
+                try { recognition.abort(); } catch (e) { /* 忽略 */ }
+            }
+            stopListeningState();
+        }
+
+        function stopListeningState() {
+            isListening = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.className = "w-full py-3 px-4 rounded-2xl bg-brandBlue text-white font-bold text-sm shadow-md hover:bg-blue-600 active:scale-[.98] transition flex items-center justify-center gap-2";
+                document.getElementById('micBtnText').innerText = "點擊說出答案（或直接點選項）";
+            }
+        }
+    </script>
+</body>
+</html>

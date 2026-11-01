@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學小達人：角、直線、正方形與長方形語音學習網</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelBlue: '#E2EBF5',
+                        pastelGreen: '#E4F1EB',
+                        pastelYellow: '#FCF3DC',
+                        pastelPurple: '#EFE7F2',
+                        pastelPink: '#FADADD',
+                        softOrange: '#FCE4D6',
+                        cardBg: '#FFFFFF',
+                        appBg: '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7F6;
+            color: #2D3748;
+            touch-action: manipulation;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-pop { animation: popIn 0.2s ease-out; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50">
+
+    <!-- 頂部：標題列 + 分頁按鈕（一起固定在最上方） -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-xl mx-auto px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-black text-slate-700 leading-tight truncate">數學語音小學堂</h1>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">第五課 · 角與圖形</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div class="bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-star text-amber-500"></i>
+                    <span id="scoreDisplay" class="font-bold text-amber-700 text-sm">0</span>
+                </div>
+                <button onclick="readGlobalText('歡迎來到數學語音學習網！請選擇單元開始學習與闖關。隨時點擊各單元的朗讀按鈕，就可以聽老師講重點喔！')"
+                        class="bg-indigo-50 text-indigo-600 p-2 rounded-xl hover:bg-indigo-100 transition active:scale-95 shadow-sm" title="語音小幫手">
+                    <i class="fa-solid fa-volume-high text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 分頁按鈕（已從底部移到上方） -->
+        <div class="max-w-xl mx-auto px-3 pb-3 flex items-center gap-2">
+            <button onclick="switchTab('units')" id="tabBtnUnits"
+                    class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-indigo-600 text-white shadow-md">
+                <i class="fa-solid fa-book-open mr-1"></i> 重點觀念
+            </button>
+            <button onclick="switchTab('practice')" id="tabBtnPractice"
+                    class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-slate-100 text-slate-600">
+                <i class="fa-solid fa-gamepad mr-1"></i> 闖關測驗
+            </button>
+            <button onclick="stopSpeech()" class="shrink-0 px-3 py-2 rounded-xl bg-rose-50 text-rose-600 text-sm font-bold hover:bg-rose-100 transition active:scale-95 whitespace-nowrap" title="停止朗讀">
+                <i class="fa-solid fa-stop mr-1"></i> 停止
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 pb-8 space-y-5">
+
+        <!-- Banner -->
+        <section class="bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink p-5 rounded-3xl shadow-sm border border-white relative overflow-hidden">
+            <div class="relative z-10">
+                <span class="bg-white/80 backdrop-blur text-slate-600 text-xs font-bold px-3 py-1 rounded-full inline-block mb-2 shadow-sm">
+                    <i class="fa-solid fa-child-reaching text-indigo-500 mr-1"></i> 小學二下數學互動學習
+                </span>
+                <h2 class="text-2xl font-black text-slate-800 mb-1">跟著聲音一起玩數學！</h2>
+                <p class="text-sm text-slate-600 font-medium">點擊喇叭聽語音解說，輕鬆搞懂角與圖形的大小祕密。</p>
+            </div>
+            <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 text-slate-900 pointer-events-none">
+                <i class="fa-solid fa-square-poll-vertical"></i>
+            </div>
+        </section>
+
+        <!-- 重點觀念 -->
+        <div id="unitsSection" class="space-y-4">
+            <div class="flex items-center justify-between px-1">
+                <h3 class="font-extrabold text-slate-700 text-base flex items-center">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mr-2 text-lg"></i> 課本重點有聲卡片
+                </h3>
+                <span class="text-xs text-slate-400 font-medium">點擊喇叭聽講解</span>
+            </div>
+
+            <!-- 單元一 -->
+            <div class="bg-cardBg rounded-3xl p-5 shadow-sm border border-slate-100 transition hover:shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="shrink-0 w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm">1</span>
+                        <h4 class="font-black text-slate-800 text-base">單元一：認識角</h4>
+                    </div>
+                    <button onclick="readUnit(1)" class="shrink-0 whitespace-nowrap text-sm bg-blue-50 text-blue-600 px-3 py-2 rounded-xl hover:bg-blue-100 transition active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-volume-high"></i> 朗讀
+                    </button>
+                </div>
+                <div class="bg-pastelBlue/40 p-4 rounded-2xl text-slate-700 text-sm space-y-2 border border-blue-50">
+                    <p class="font-bold flex items-center text-blue-900"><i class="fa-solid fa-circle-check text-blue-500 mr-1.5"></i> 角的組成要素：</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1 font-medium">
+                        <li>每個角都有 <span class="text-blue-700 font-bold">2條直線</span> 和 <span class="text-blue-700 font-bold">1個尖尖的地方</span>（頂點）。</li>
+                        <li>兩條直線接在一起尖尖的地方是角的「頂點」，兩條直線是角的「邊」。</li>
+                        <li><strong>重要觀念：</strong>角的開口越大，角就越大；邊畫得比較長，角不會變大喔！（邊長不影響角的大小）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 單元二 -->
+            <div class="bg-cardBg rounded-3xl p-5 shadow-sm border border-slate-100 transition hover:shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="shrink-0 w-8 h-8 rounded-xl bg-green-100 text-green-700 flex items-center justify-center font-black text-sm">2</span>
+                        <h4 class="font-black text-slate-800 text-base">單元二：角的大小比較與符號</h4>
+                    </div>
+                    <button onclick="readUnit(2)" class="shrink-0 whitespace-nowrap text-sm bg-green-50 text-green-600 px-3 py-2 rounded-xl hover:bg-green-100 transition active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-volume-high"></i> 朗讀
+                    </button>
+                </div>
+                <div class="bg-pastelGreen/40 p-4 rounded-2xl text-slate-700 text-sm space-y-2 border border-green-50">
+                    <p class="font-bold flex items-center text-green-900"><i class="fa-solid fa-circle-check text-green-500 mr-1.5"></i> 重疊比較與符號表示：</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1 font-medium">
+                        <li><strong>重疊法：</strong>對齊兩個角的頂點，再對齊其中一邊，看另一個邊的位置來比較大小。</li>
+                        <li>我們用符號 <span class="font-bold text-green-700">「∠」</span> 表示角。例如 1號角記成 ∠1，讀作「角一」。</li>
+                        <li>大於記成 <span class="font-bold text-green-700">「&gt;」</span>，小於記成 <span class="font-bold text-green-700">「&lt;」</span>。例如 ∠1 &gt; ∠2 代表角一 大於 角二。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 單元三 -->
+            <div class="bg-cardBg rounded-3xl p-5 shadow-sm border border-slate-100 transition hover:shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="shrink-0 w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-sm">3</span>
+                        <h4 class="font-black text-slate-800 text-base">單元三：直角、銳角與鈍角</h4>
+                    </div>
+                    <button onclick="readUnit(3)" class="shrink-0 whitespace-nowrap text-sm bg-amber-50 text-amber-600 px-3 py-2 rounded-xl hover:bg-amber-100 transition active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-volume-high"></i> 朗讀
+                    </button>
+                </div>
+                <div class="bg-pastelYellow/40 p-4 rounded-2xl text-slate-700 text-sm space-y-2 border border-amber-50">
+                    <p class="font-bold flex items-center text-amber-900"><i class="fa-solid fa-circle-check text-amber-500 mr-1.5"></i> 角的分類：</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1 font-medium">
+                        <li><strong>直角：</strong>像三角板上方端正的直角，用小方框記號 <span class="font-bold text-amber-700">「∟」</span> 來標示。</li>
+                        <li><strong>銳角：</strong>比直角小的角，叫做銳角。</li>
+                        <li><strong>鈍角：</strong>比直角大的角（且比平角小），叫做鈍角。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 單元四 -->
+            <div class="bg-cardBg rounded-3xl p-5 shadow-sm border border-slate-100 transition hover:shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="shrink-0 w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-sm">4</span>
+                        <h4 class="font-black text-slate-800 text-base">單元四：正方形與長方形的性質</h4>
+                    </div>
+                    <button onclick="readUnit(4)" class="shrink-0 whitespace-nowrap text-sm bg-purple-50 text-purple-600 px-3 py-2 rounded-xl hover:bg-purple-100 transition active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-volume-high"></i> 朗讀
+                    </button>
+                </div>
+                <div class="bg-pastelPurple/40 p-4 rounded-2xl text-slate-700 text-sm space-y-2 border border-purple-50">
+                    <p class="font-bold flex items-center text-purple-900"><i class="fa-solid fa-circle-check text-purple-500 mr-1.5"></i> 圖形祕密：</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1 font-medium">
+                        <li><strong>正方形：</strong>4條邊一樣長，4個角都是直角。</li>
+                        <li><strong>長方形：</strong>上、下兩條邊一樣長，左、右兩條邊一樣長（對邊一樣長），4個角也都是直角。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 回首頁 -->
+            <div class="text-center pt-2">
+                <a href="index.html" onclick="stopSpeech()"
+                   class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                    🏠 回到首頁
+                </a>
+            </div>
+        </div>
+
+        <!-- 闖關測驗 -->
+        <div id="practiceSection" class="space-y-4 hidden">
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 space-y-4">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+                    <span id="questionCounter">題目 1 / 5</span>
+                    <span id="scoreBadge" class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full">得分：0</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-indigo-500 h-full w-1/5 transition-all duration-300"></div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <h4 id="questionTitle" class="font-black text-slate-800 text-base leading-snug"></h4>
+                        <button onclick="readCurrentQuestion()" class="bg-white text-indigo-600 p-2 rounded-xl shadow-sm hover:bg-indigo-50 transition border border-indigo-100 shrink-0" title="朗讀題目與選項">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <p id="questionDesc" class="text-sm text-slate-600 font-medium"></p>
+                </div>
+
+                <div id="optionsContainer" class="space-y-2.5"></div>
+
+                <div id="feedbackContainer" class="hidden pt-2 space-y-3">
+                    <div id="feedbackBox" class="p-3.5 rounded-2xl text-sm font-bold flex items-center space-x-2"></div>
+                    <button id="nextBtn" onclick="nextQuestion()" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-2xl shadow-md hover:bg-indigo-700 transition flex items-center justify-center space-x-2 active:scale-[.98]">
+                        <span>下一題</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 完成畫面 -->
+            <div id="quizCompleteCard" class="hidden bg-white rounded-3xl p-6 shadow-sm border border-slate-100 text-center space-y-4">
+                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800">太棒了！完成數學闖關！</h3>
+                <p id="finalScoreText" class="text-slate-600 font-medium text-sm"></p>
+                <div class="flex gap-2">
+                    <button onclick="restartQuiz()" class="flex-1 bg-indigo-600 text-white font-bold py-3.5 rounded-2xl shadow-md hover:bg-indigo-700 transition active:scale-95">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> 再挑戰一次
+                    </button>
+                    <a href="index.html" onclick="stopSpeech()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3.5 rounded-2xl shadow-md hover:bg-slate-200 transition active:scale-95 flex items-center justify-center">
+                        🏠 回首頁
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 提示視窗（取代 alert） -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-sm text-slate-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 語音 =================
+        function speakText(text, rate) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音朗讀功能');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            utterance.rate = rate || 0.9; // 稍微放慢，適合小朋友
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function readGlobalText(text) { speakText(text); }
+
+        // 離開頁面時停止朗讀
+        window.addEventListener('pagehide', stopSpeech);
+
+        // 提示視窗
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            const m = document.getElementById('noticeModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeNotice() {
+            const m = document.getElementById('noticeModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ================= 單元朗讀 =================
+        const unitTexts = {
+            1: "單元一，認識角。每個角都有兩條直線和一個尖尖的地方，也就是頂點。兩條直線接在一起尖尖的地方是頂點，兩條直線是邊。特別注意：邊畫得比較長，角的大小不會變喔！",
+            2: "單元二，角的大小比較與符號。我們可以用重疊法來比較角的大小。角用符號『角』來表示，例如一號角記成『角一』。大於記成『大於』符號，小於記成『小於』符號。",
+            3: "單元三，直角、銳角與鈍角。像三角板上端正的角叫做直角，用小方框記號表示。比直角小的角叫做銳角；比直角大的角叫做鈍角。",
+            4: "單元四，正方形與長方形的性質。正方形的四條邊一樣長，四個角都是直角。長方形的上下兩條邊一樣長，左右兩條邊一樣長，也就是對邊一樣長，四個角也都是直角。"
+        };
+
+        function readUnit(unitNum) {
+            speakText(unitTexts[unitNum]);
+        }
+
+        // ================= 分頁切換 =================
+        const TAB_ON = "flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-indigo-600 text-white shadow-md";
+        const TAB_OFF = "flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-slate-100 text-slate-600";
+
+        function switchTab(tabName) {
+            const unitsSec = document.getElementById('unitsSection');
+            const practiceSec = document.getElementById('practiceSection');
+            const tabBtnUnits = document.getElementById('tabBtnUnits');
+            const tabBtnPractice = document.getElementById('tabBtnPractice');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (tabName === 'units') {
+                unitsSec.classList.remove('hidden');
+                practiceSec.classList.add('hidden');
+                tabBtnUnits.className = TAB_ON;
+                tabBtnPractice.className = TAB_OFF;
+                speakText("切換到重點觀念學習。");
+            } else {
+                unitsSec.classList.add('hidden');
+                practiceSec.classList.remove('hidden');
+                tabBtnPractice.className = TAB_ON;
+                tabBtnUnits.className = TAB_OFF;
+
+                if (!quizStarted) {
+                    quizStarted = true;
+                    loadQuestion("開始闖關測驗！加油！");
+                } else if (quizFinished) {
+                    speakText("你已經完成闖關囉！可以按再挑戰一次。");
+                } else {
+                    speakText("繼續闖關！");
+                }
+            }
+        }
+
+        // ================= 闖關測驗 =================
+        const quizData = [
+            {
+                title: "題目一：關於角的邊長",
+                desc: "妮妮把角的邊畫得比原本更長，請問這個角的大小會怎麼改變呢？",
+                options: [
+                    { text: "邊畫得比較長，角就變大", correct: false, feedback: "答錯囉！邊畫得長短不會影響角的大小喔！" },
+                    { text: "邊畫得比較長，角就變小", correct: false, feedback: "答錯囉！角的開口大小才決定角的大小，邊長沒影響。" },
+                    { text: "邊畫得長短不會影響角的大小", correct: true, feedback: "答對了！你真聰明，邊的長短不會影響角的大小！" }
+                ]
+            },
+            {
+                title: "題目二：角的組成要素",
+                desc: "下列關於角的敘述哪一個是正確的？",
+                options: [
+                    { text: "每個角都有2條直線和1個尖尖的地方（頂點）", correct: true, feedback: "答對了！角剛好是由兩條直線和一個頂點組成的喔！" },
+                    { text: "角只有一條直線和兩個頂點", correct: false, feedback: "答錯囉！一個角是由兩條直線接在一起組成的。" },
+                    { text: "角不需要直線，只要圓圈就可以", correct: false, feedback: "答錯囉！角的邊必須是直線。" }
+                ]
+            },
+            {
+                title: "題目三：直角與分類",
+                desc: "比直角還要小的角，我們稱為什麼角？",
+                options: [
+                    { text: "鈍角", correct: false, feedback: "答錯囉！比直角大的是鈍角喔！" },
+                    { text: "銳角", correct: true, feedback: "答對了！比直角小的角叫做銳角！" },
+                    { text: "平角", correct: false, feedback: "答錯囉！比直角小的是銳角。" }
+                ]
+            },
+            {
+                title: "題目四：正方形的性質",
+                desc: "關於正方形的邊長與角，下列哪一個正確？",
+                options: [
+                    { text: "只有2條邊一樣長，4個角不是直角", correct: false, feedback: "答錯囉！正方形全部邊都一樣長且都是直角。" },
+                    { text: "4條邊都一樣長，4個角都是直角", correct: true, feedback: "答對了！正方形具備4條等長邊與4個直角！" },
+                    { text: "4條邊都不一樣長", correct: false, feedback: "答錯囉！正方形的四條邊長度完全一樣。" }
+                ]
+            },
+            {
+                title: "題目五：長方形的性質",
+                desc: "長方形的邊長有什麼特性呢？",
+                options: [
+                    { text: "上下兩條邊一樣長，左右兩條邊一樣長（對邊一樣長）", correct: true, feedback: "答對了！長方形的對邊一樣長，4個角都是直角！" },
+                    { text: "4條邊長度通通都完全不一樣", correct: false, feedback: "答錯囉！長方形的對邊是等長的。" },
+                    { text: "只有3條邊一樣長", correct: false, feedback: "答錯囉！長方形有4條邊。" }
+                ]
+            }
+        ];
+
+        const LABELS = ['①', '②', '③', '④'];
+        let currentQuestionIndex = 0;
+        let currentOptions = [];
+        let score = 0;
+        let answered = false;
+        let quizStarted = false;
+        let quizFinished = false;
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function questionSpeech() {
+            const q = quizData[currentQuestionIndex];
+            let t = `${q.title}。${q.desc}`;
+            currentOptions.forEach((o, i) => { t += ` 選項${i + 1}，${o.text}。`; });
+            return t;
+        }
+
+        function loadQuestion(prefix) {
+            answered = false;
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('questionCounter').innerText = `題目 ${currentQuestionIndex + 1} / ${quizData.length}`;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+            document.getElementById('questionTitle').innerText = q.title;
+            document.getElementById('questionDesc').innerText = q.desc;
+            document.getElementById('scoreBadge').innerText = `得分：${score}`;
+            document.getElementById('feedbackContainer').classList.add('hidden');
+            document.getElementById('quizCompleteCard').classList.add('hidden');
+            document.getElementById('nextBtn').firstElementChild.innerText =
+                (currentQuestionIndex === quizData.length - 1) ? '完成闖關' : '下一題';
+
+            // 選項順序隨機，編號依畫面順序顯示
+            currentOptions = shuffle(q.options);
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            currentOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "opt-btn w-full text-left p-4 rounded-2xl bg-white border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 font-medium text-slate-700 text-sm transition shadow-sm active:scale-[.98] flex items-center gap-2";
+                const label = document.createElement('span');
+                label.className = "shrink-0 font-black text-indigo-500";
+                label.innerText = LABELS[idx];
+                const text = document.createElement('span');
+                text.innerText = opt.text;
+                btn.appendChild(label);
+                btn.appendChild(text);
+                btn.onclick = () => selectOption(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            speakText((prefix ? prefix + ' ' : '') + questionSpeech());
+        }
+
+        function readCurrentQuestion() {
+            if (quizFinished) return;
+            speakText(questionSpeech());
+        }
+
+        function selectOption(optIndex) {
+            if (answered) return;
+            answered = true;
+
+            const selectedOpt = currentOptions[optIndex];
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            const feedbackBox = document.getElementById('feedbackBox');
+            feedbackContainer.classList.remove('hidden');
+
+            // 標示選項：正確答案綠色、選錯的紅色，並鎖定
+            document.querySelectorAll('#optionsContainer .opt-btn').forEach((btn, i) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-indigo-50', 'hover:border-indigo-200', 'border-slate-200');
+                if (currentOptions[i].correct) {
+                    btn.classList.add('bg-emerald-50', 'border-emerald-400');
+                } else if (i === optIndex) {
+                    btn.classList.add('bg-rose-50', 'border-rose-400');
+                } else {
+                    btn.classList.add('border-slate-200', 'opacity-60');
+                }
+            });
+
+            if (selectedOpt.correct) {
+                score += 20;
+                document.getElementById('scoreDisplay').innerText = score;
+                document.getElementById('scoreBadge').innerText = `得分：${score}`;
+                feedbackBox.className = "p-3.5 rounded-2xl text-sm font-bold flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200";
+                feedbackBox.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i><span></span>';
+                feedbackBox.querySelector('span').innerText = selectedOpt.feedback;
+                speakText(selectedOpt.feedback);
+            } else {
+                const right = currentOptions.findIndex(o => o.correct);
+                const msg = `${selectedOpt.feedback} 正確答案是${LABELS[right]}。`;
+                feedbackBox.className = "p-3.5 rounded-2xl text-sm font-bold flex items-center space-x-2 bg-rose-50 text-rose-800 border border-rose-200";
+                feedbackBox.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i><span></span>';
+                feedbackBox.querySelector('span').innerText = msg;
+                speakText(`${selectedOpt.feedback} 正確答案是選項${right + 1}。`);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showQuizComplete();
+            }
+        }
+
+        function showQuizComplete() {
+            quizFinished = true;
+            currentQuestionIndex = quizData.length - 1; // 保持在最後一題的索引，避免越界
+            document.getElementById('optionsContainer').innerHTML = '';
+            document.getElementById('feedbackContainer').classList.add('hidden');
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('questionTitle').innerText = "闖關完成！";
+            document.getElementById('questionDesc').innerText = "你已經完成所有數學挑戰題！";
+            document.getElementById('quizCompleteCard').classList.remove('hidden');
+            document.getElementById('finalScoreText').innerText = `太棒了！總得分：${score} 分`;
+            speakText(`太棒了！你已經完成所有數學闖關，總共得到 ${score} 分！`);
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizFinished = false;
+            document.getElementById('scoreDisplay').innerText = score;
+            loadQuestion("重新開始闖關！");
+        }
+    </script>
+</body>
+</html>
