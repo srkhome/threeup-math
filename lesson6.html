@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國小數學：面積 - 語音學習｜小豆豆數學樂園</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7FB;
+            color: #2D3748;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.94); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop { animation: popIn 0.25s ease-out both; }
+        @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
+    </style>
+</head>
+<body class="min-h-screen pb-28">
+
+    <!-- 頂部：標題列 + 分頁按鈕 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-md mx-auto px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-black text-slate-700 leading-tight truncate">📐 面積小教室</h1>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">第六課 · 面積</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap">
+                    <span id="progressText">1 / 16</span>
+                </div>
+                <button onclick="stopSpeech()" class="bg-rose-50 text-rose-600 px-2.5 py-1.5 rounded-full text-xs font-bold active:scale-95 transition whitespace-nowrap" title="停止朗讀">⏹ 停止</button>
+            </div>
+        </div>
+        <div class="max-w-md mx-auto px-3 pb-3 flex items-center gap-2">
+            <button id="tabLesson" onclick="jumpTo('lesson')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">📖 學習</button>
+            <button id="tabQuiz" onclick="jumpTo('quiz')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">✏️ 測驗</button>
+            <button id="tabResult" onclick="jumpTo('result')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">🏁 成績</button>
+        </div>
+    </header>
+
+    <!-- 卡片區 -->
+    <main class="max-w-md mx-auto px-4 py-5">
+        <div id="cardArea"></div>
+
+        <div class="text-center pt-6">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+    </main>
+
+    <!-- 底部：上一個／下一個 -->
+    <nav class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 shadow-lg">
+        <div class="max-w-md mx-auto px-4 py-3 flex gap-3">
+            <button id="prevBtn" onclick="go(-1)" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl py-3 text-lg font-bold shadow-sm active:scale-95 transition disabled:opacity-40 disabled:pointer-events-none">⬅️ 上一個</button>
+            <button id="nextBtn" onclick="go(1)" class="flex-1 bg-slate-800 text-white rounded-2xl py-3 text-lg font-bold shadow-md active:scale-95 transition disabled:opacity-40 disabled:pointer-events-none">下一個 ➡️</button>
+        </div>
+    </nav>
+
+    <!-- 提示視窗（取代 alert） -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-base text-slate-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 小圖示（SVG） =================
+        function svgWrap(inner) {
+            return `<svg viewBox="0 0 160 100" class="w-full h-32" role="img" aria-hidden="true">${inner}</svg>`;
+        }
+
+        // 方格圖：filled 為 null 代表全部填滿，否則給 "col,row" 陣列
+        function gridSVG(cols, rows, size, filled, caption) {
+            const x0 = (160 - cols * size) / 2;
+            const y0 = caption ? 8 : (100 - rows * size) / 2;
+            let s = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const on = !filled || filled.includes(`${c},${r}`);
+                    s += `<rect x="${x0 + c * size}" y="${y0 + r * size}" width="${size}" height="${size}" fill="${on ? '#5eead4' : '#ffffff'}" stroke="${on ? '#0f766e' : '#cbd5e1'}" stroke-width="1.5"/>`;
+                }
+            }
+            if (caption) {
+                s += `<text x="80" y="${y0 + rows * size + 14}" font-size="10" font-weight="700" fill="#0f766e" text-anchor="middle">${caption}</text>`;
+            }
+            return svgWrap(s);
+        }
+
+        const visuals = {
+            // 兩個面疊疊看
+            compare: () => svgWrap(`
+                <rect x="28" y="12" width="104" height="76" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="3"/>
+                <rect x="50" y="30" width="56" height="40" rx="5" fill="#fbcfe8" stroke="#ec4899" stroke-width="3"/>
+                <text x="78" y="56" font-size="16" font-weight="900" fill="#9d174d" text-anchor="middle">甲</text>
+                <text x="118" y="32" font-size="16" font-weight="900" fill="#1d4ed8" text-anchor="middle">乙</text>`),
+            // 1 平方公分
+            unit: () => svgWrap(`
+                <rect x="50" y="22" width="56" height="56" fill="#bbf7d0" stroke="#16a34a" stroke-width="3"/>
+                <text x="78" y="55" font-size="14" font-weight="900" fill="#166534" text-anchor="middle">1 cm²</text>
+                <path d="M50 14 L106 14 M50 10 L50 18 M106 10 L106 18" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                <text x="78" y="10" font-size="9" font-weight="700" fill="#dc2626" text-anchor="middle">1 公分</text>
+                <path d="M114 22 L114 78 M110 22 L118 22 M110 78 L118 78" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                <text x="136" y="54" font-size="9" font-weight="700" fill="#dc2626" text-anchor="middle">1 公分</text>`),
+            // 數格子（階梯形）
+            stairs: () => gridSVG(5, 4, 17, ['0,0','0,1','1,1','0,2','1,2','2,2','0,3','1,3','2,3','3,3'], '每一格是 1 平方公分'),
+            // 8 個小方塊
+            blocks8: () => gridSVG(4, 2, 24, null, '8 個 1 平方公分的小方塊'),
+            // 6 排 × 4 排
+            grid24: () => gridSVG(6, 4, 17, null, '一排 6 格，共 4 排'),
+            // 切割與拼湊
+            cut: () => svgWrap(`
+                <rect x="10" y="30" width="44" height="44" fill="#fde68a" stroke="#d97706" stroke-width="3"/>
+                <line x1="10" y1="30" x2="54" y2="74" stroke="#d97706" stroke-width="3" stroke-dasharray="4 3"/>
+                <text x="32" y="90" font-size="9" font-weight="700" fill="#92400e" text-anchor="middle">剪開</text>
+                <path d="M64 52 L90 52 M84 46 L92 52 L84 58" fill="none" stroke="#78350f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <polygon points="100,74 144,74 122,52" fill="#fde68a" stroke="#d97706" stroke-width="3"/>
+                <polygon points="122,52 100,74 122,74" fill="#fbbf24" stroke="#d97706" stroke-width="3"/>
+                <text x="122" y="90" font-size="9" font-weight="700" fill="#92400e" text-anchor="middle">拼成新形狀</text>`),
+            // 兩個三角形拼成正方形
+            tri2: () => svgWrap(`
+                <polygon points="30,76 30,24 82,24" fill="#fbcfe8" stroke="#db2777" stroke-width="3"/>
+                <polygon points="94,76 146,76 146,24" fill="#c7d2fe" stroke="#6366f1" stroke-width="3"/>
+                <text x="88" y="56" font-size="22" font-weight="900" fill="#475569" text-anchor="middle">＋</text>
+                <text x="80" y="94" font-size="9" font-weight="700" fill="#475569" text-anchor="middle">兩個一樣大的三角形，剛好拼成 1 cm² 的正方形</text>`),
+            // 樹葉估算
+            leaf: () => svgWrap(`
+                <g stroke="#cbd5e1" stroke-width="1">
+                    <line x1="40" y1="10" x2="40" y2="90"/><line x1="60" y1="10" x2="60" y2="90"/><line x1="80" y1="10" x2="80" y2="90"/><line x1="100" y1="10" x2="100" y2="90"/><line x1="120" y1="10" x2="120" y2="90"/>
+                    <line x1="30" y1="20" x2="130" y2="20"/><line x1="30" y1="40" x2="130" y2="40"/><line x1="30" y1="60" x2="130" y2="60"/><line x1="30" y1="80" x2="130" y2="80"/>
+                </g>
+                <ellipse cx="80" cy="50" rx="34" ry="19" transform="rotate(-25 80 50)" fill="#86efac" stroke="#16a34a" stroke-width="3"/>
+                <path d="M52 66 Q80 48 108 34" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>`),
+            // 指甲
+            nail: () => svgWrap(`
+                <text x="30" y="68" font-size="54">👍</text>
+                <rect x="104" y="36" width="28" height="28" fill="#bbf7d0" stroke="#16a34a" stroke-width="3"/>
+                <text x="118" y="54" font-size="9" font-weight="900" fill="#166534" text-anchor="middle">1 cm²</text>
+                <text x="118" y="80" font-size="9" font-weight="700" fill="#475569" text-anchor="middle">比一比</text>`),
+            // 健保卡
+            card: () => svgWrap(`
+                <rect x="34" y="22" width="92" height="58" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="3"/>
+                <circle cx="56" cy="46" r="10" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+                <line x1="76" y1="40" x2="112" y2="40" stroke="#059669" stroke-width="3" stroke-linecap="round"/>
+                <line x1="76" y1="52" x2="104" y2="52" stroke="#059669" stroke-width="3" stroke-linecap="round"/>
+                <text x="80" y="72" font-size="10" font-weight="900" fill="#047857" text-anchor="middle">健保卡</text>`),
+            // 百元鈔票
+            bill: () => svgWrap(`
+                <rect x="22" y="22" width="116" height="56" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="3"/>
+                <circle cx="80" cy="50" r="17" fill="#ffffff" stroke="#dc2626" stroke-width="2"/>
+                <text x="80" y="56" font-size="16" font-weight="900" fill="#b91c1c" text-anchor="middle">100</text>
+                <text x="36" y="36" font-size="10" font-weight="900" fill="#b91c1c">100</text>
+                <text x="124" y="72" font-size="10" font-weight="900" fill="#b91c1c" text-anchor="end">100</text>`)
+        };
+
+        // ================= 課程與測驗內容 =================
+        const cards = [
+            // 學習區
+            { type: 'lesson', title: '面的比較', content: '兩個面比大小，可以把兩個面疊疊看，超出的那個面比較大。', color: '#EAD1DC', visual: 'compare' },
+            { type: 'lesson', title: '認識平方公分', content: '邊長 1 公分的正方形，面積是 1 平方公分，也可以記成 1 cm²。', color: '#D5E8D4', visual: 'unit' },
+            { type: 'lesson', title: '方格與面積', content: '算算看圖形佔了幾個格子，每一格是 1 平方公分，數一數總共有幾平方公分。', color: '#DAE8FC', visual: 'stairs' },
+            { type: 'lesson', title: '切割與拼湊', content: '將圖形切開再拼成新的形狀，面積不會改變喔！', color: '#FFF2CC', visual: 'cut' },
+            { type: 'lesson', title: '面積估算', content: '遇到像樹葉這樣不規則的形狀，可以用 1 平方公分的透明板來大約估算面積。', color: '#E1D5E7', visual: 'leaf' },
+
+            // 測驗區
+            { type: 'quiz', title: '測驗一：比大小', visual: 'compare', color: '#FADADD',
+              question: '甲圖和乙圖疊在一起，甲完全被乙蓋住，而且乙還有多出來。誰的面積大？',
+              options: ['甲圖', '乙圖', '一樣大'], correct: 1,
+              exp: '疊在一起時，被蓋住的比較小，還有多出來的乙比較大。' },
+            { type: 'quiz', title: '測驗二：平方公分', visual: 'unit', color: '#C1E1C1',
+              question: '數學課本上說的「1 平方公分」，是指邊長多少的正方形面積？',
+              options: ['1 公分', '1 公尺', '10 公分'], correct: 0,
+              exp: '邊長 1 公分的正方形，面積就是 1 平方公分。' },
+            { type: 'quiz', title: '測驗三：排積木', visual: 'blocks8', color: '#AEC6CF',
+              question: '小美畫了一個圖形，裡面剛好可以排滿 8 個「1 平方公分」的小方塊。請問這個圖形的面積是多少？',
+              options: ['1 平方公分', '8 平方公分', '10 平方公分'], correct: 1,
+              exp: '每個小方塊是 1 平方公分，8 個就是 8 平方公分。' },
+            { type: 'quiz', title: '測驗四：切割與拼湊', visual: 'cut', color: '#FDFD96',
+              question: '將一張面積 20 平方公分的色紙，剪開重新拼成一個機器人，面積會變多少？',
+              options: ['變大', '變小', '還是 20 平方公分'], correct: 2,
+              exp: '剪開再拼起來只是換位置，面積不會改變，還是 20 平方公分。' },
+            { type: 'quiz', title: '測驗五：指甲估算', visual: 'nail', color: '#C3B1E1',
+              question: '你的大拇指指甲的面積，大約是幾平方公分呢？',
+              options: ['大約 1 平方公分', '大約 10 平方公分', '大約 50 平方公分'], correct: 0,
+              exp: '大拇指指甲和 1 平方公分的小方格差不多大。' },
+            { type: 'quiz', title: '測驗六：面積記法', visual: 'unit', color: '#F8D8CC',
+              question: '邊長 1 公分的正方形，面積是 1 平方公分，也可以記成什麼？',
+              options: ['1 cm', '1 cm²', '1 m'], correct: 1,
+              exp: '平方公分記成 cm²，有小小的 2 喔！' },
+            { type: 'quiz', title: '測驗七：數格子', visual: 'grid24', color: '#D4E0D9',
+              question: '一張卡片放在方格板上，一排有 6 格，共有 4 排。這張卡片的面積是多少平方公分？',
+              options: ['10 平方公分', '20 平方公分', '24 平方公分'], correct: 2,
+              exp: '一排 6 格，4 排就是 6 × 4 = 24 格，面積 24 平方公分。' },
+            { type: 'quiz', title: '測驗八：圖形組合', visual: 'tri2', color: '#E2C8E4',
+              question: '兩個一樣大的三角形，可以剛好拼成一個 1 平方公分的正方形。請問這兩個三角形「合起來」的面積是多少？',
+              options: ['1 平方公分', '2 平方公分', '半平方公分'], correct: 0,
+              exp: '兩個三角形合起來就是那個正方形，所以面積是 1 平方公分。' },
+            { type: 'quiz', title: '測驗九：健保卡估算', visual: 'card', color: '#FFE4C4',
+              question: '拿出健保卡估估看，健保卡的面積大約是多少平方公分？',
+              options: ['大約 5 平方公分', '大約 50 平方公分', '大約 500 平方公分'], correct: 1,
+              exp: '健保卡長約 8 公分多、寬約 5 公分多，面積大約 50 平方公分。' },
+            { type: 'quiz', title: '測驗十：鈔票估算', visual: 'bill', color: '#DCD0FF',
+              question: '一張一百元鈔票的面積，大約是多少平方公分？',
+              options: ['大約 10 平方公分', '大約 50 平方公分', '大約 100 平方公分'], correct: 2,
+              exp: '一百元鈔票長約 15 公分、寬約 7 公分，面積大約 100 平方公分。' },
+
+            // 結果區
+            { type: 'result', title: '學習總結', color: '#F4F1DE' }
+        ];
+
+        const LESSON_IDX = cards.map((c, i) => c.type === 'lesson' ? i : -1).filter(i => i >= 0);
+        const QUIZ_IDX = cards.map((c, i) => c.type === 'quiz' ? i : -1).filter(i => i >= 0);
+        const RESULT_IDX = cards.length - 1;
+        const LABELS = ['①', '②', '③', '④'];
+
+        const STATE = {
+            def:   'border-slate-200 bg-white text-slate-800',
+            right: 'border-emerald-500 bg-emerald-50 text-emerald-800',
+            wrong: 'border-rose-500 bg-rose-50 text-rose-800',
+            dim:   'border-slate-100 bg-slate-50 text-slate-400'
+        };
+
+        let current = 0;
+        let answered = {};   // { 卡片索引: 選擇的選項索引 }
+
+        // ================= 工具 =================
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function getScore() {
+            return QUIZ_IDX.filter(i => answered[i] === cards[i].correct).length;
+        }
+
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            const m = document.getElementById('noticeModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeNotice() {
+            const m = document.getElementById('noticeModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ================= 語音 =================
+        function toSpeech(text) {
+            return text.replace(/cm²/g, '平方公分').replace(/\bcm\b/g, '公分').replace(/\bm\b/g, '公尺');
+        }
+
+        function speak(text) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音朗讀功能');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(toSpeech(text));
+            u.lang = 'zh-TW';
+            u.rate = 0.9;
+            window.speechSynthesis.speak(u);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function playAudio() {
+            const c = cards[current];
+            if (c.type === 'lesson') {
+                speak(`${c.title}。${c.content}`);
+            } else if (c.type === 'quiz') {
+                const opts = c.options.map((o, i) => `選項${i + 1}，${o}`).join('。');
+                speak(`${c.title}。${c.question}。${opts}`);
+            } else {
+                speak(`你答對了 ${getScore()} 題，總共 ${QUIZ_IDX.length} 題。`);
+            }
+        }
+
+        window.addEventListener('pagehide', stopSpeech);
+
+        // ================= 畫面 =================
+        const TAB_ON = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-indigo-600 text-white shadow-md';
+        const TAB_OFF = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-slate-100 text-slate-600';
+
+        function updateTabs() {
+            const t = cards[current].type;
+            document.getElementById('tabLesson').className = t === 'lesson' ? TAB_ON : TAB_OFF;
+            document.getElementById('tabQuiz').className = t === 'quiz' ? TAB_ON : TAB_OFF;
+            document.getElementById('tabResult').className = t === 'result' ? TAB_ON : TAB_OFF;
+        }
+
+        function playBtnHTML() {
+            return `<button onclick="playAudio()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-4 text-[22px] font-black shadow-md active:scale-[.98] transition flex items-center justify-center gap-2">🔊 <span>播放語音</span></button>`;
+        }
+
+        function renderCard() {
+            const c = cards[current];
+            const area = document.getElementById('cardArea');
+            let top = '';
+            let body = '';
+
+            if (c.visual) {
+                top = `<div class="p-3" style="background:${c.color}">${visuals[c.visual]()}</div>`;
+            } else {
+                top = `<div class="py-6 text-center text-6xl" style="background:${c.color}">🏁</div>`;
+            }
+
+            if (c.type === 'lesson') {
+                const n = LESSON_IDX.indexOf(current) + 1;
+                body = `
+                    <span class="inline-block text-xs font-black bg-slate-800 text-white px-3 py-1 rounded-full">📖 學習 ${n} / ${LESSON_IDX.length}</span>
+                    <h2 class="text-[30px] font-black text-slate-800 leading-snug">${esc(c.title)}</h2>
+                    <p class="text-[22px] leading-relaxed font-medium text-slate-700">${esc(c.content)}</p>
+                    ${playBtnHTML()}`;
+            } else if (c.type === 'quiz') {
+                const done = answered[current] !== undefined;
+                const opts = c.options.map((o, i) => {
+                    let st = 'def';
+                    if (done) {
+                        if (i === c.correct) st = 'right';
+                        else if (i === answered[current]) st = 'wrong';
+                        else st = 'dim';
+                    }
+                    return `<button type="button" data-idx="${i}" ${done ? 'disabled' : ''}
+                        class="opt-btn w-full text-left px-4 py-3 rounded-2xl border-2 text-[22px] font-bold shadow-sm transition active:scale-[.98] flex items-center gap-2 ${STATE[st]}">
+                        <span class="shrink-0 font-black text-indigo-500">${LABELS[i]}</span><span>${esc(o)}</span></button>`;
+                }).join('');
+
+                let fb = '';
+                if (done) {
+                    const ok = answered[current] === c.correct;
+                    fb = ok
+                        ? `<div class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl p-4 text-[20px] leading-relaxed"><b>✅ 答對了！好棒！</b><br>💡 ${esc(c.exp)}</div>`
+                        : `<div class="bg-rose-50 text-rose-800 border border-rose-200 rounded-2xl p-4 text-[20px] leading-relaxed"><b>❌ 答錯了喔！</b>　正確答案：<b>${esc(c.options[c.correct])}</b><br>💡 ${esc(c.exp)}</div>`;
+                }
+
+                const n = QUIZ_IDX.indexOf(current) + 1;
+                body = `
+                    <span class="inline-block text-xs font-black bg-indigo-600 text-white px-3 py-1 rounded-full">✏️ 測驗 ${n} / ${QUIZ_IDX.length}</span>
+                    <h2 class="text-[28px] font-black text-slate-800 leading-snug">${esc(c.title)}</h2>
+                    <p class="text-[22px] leading-relaxed font-medium text-slate-700">${esc(c.question)}</p>
+                    <div class="space-y-3">${opts}</div>
+                    ${fb}
+                    ${playBtnHTML()}`;
+            } else {
+                const score = getScore();
+                const total = QUIZ_IDX.length;
+                const doneCount = QUIZ_IDX.filter(i => answered[i] !== undefined).length;
+                let emoji, msg;
+                if (doneCount < total) { emoji = '📝'; msg = `還有 ${total - doneCount} 題沒作答，點下面的題號可以回去寫喔！`; }
+                else if (score === total) { emoji = '🏆'; msg = '全部答對！你是面積小達人！'; }
+                else if (score >= 8) { emoji = '🌟'; msg = '很棒喔！再細心一點就更完美了！'; }
+                else if (score >= 6) { emoji = '👍'; msg = '不錯喔！回去看看答錯的題目吧！'; }
+                else { emoji = '💪'; msg = '沒關係！再看一次學習卡片，再來挑戰！'; }
+
+                const chips = QUIZ_IDX.map((qi, k) => {
+                    const a = answered[qi];
+                    let cls = 'bg-slate-100 text-slate-500 border-slate-200', mark = '⚪';
+                    if (a !== undefined) {
+                        if (a === cards[qi].correct) { cls = 'bg-emerald-50 text-emerald-700 border-emerald-300'; mark = '✅'; }
+                        else { cls = 'bg-rose-50 text-rose-700 border-rose-300'; mark = '❌'; }
+                    }
+                    return `<button type="button" data-goto="${qi}" class="goto-btn border-2 rounded-2xl py-2 text-base font-black active:scale-95 transition ${cls}">${mark}<br>${k + 1}</button>`;
+                }).join('');
+
+                body = `
+                    <span class="inline-block text-xs font-black bg-amber-500 text-white px-3 py-1 rounded-full">🏁 學習總結</span>
+                    <div class="text-center space-y-1">
+                        <div class="text-6xl">${emoji}</div>
+                        <div class="text-[34px] font-black text-amber-600">${score} <span class="text-xl text-slate-400">/ ${total} 題</span></div>
+                        <p class="text-[20px] font-bold text-slate-600 leading-relaxed">${msg}</p>
+                    </div>
+                    <div class="grid grid-cols-5 gap-2">${chips}</div>
+                    <div class="flex gap-2">
+                        <button onclick="restart()" class="flex-1 bg-indigo-600 text-white font-black rounded-2xl py-3 text-lg shadow-md active:scale-95 transition">🔄 重新開始</button>
+                        <a href="index.html" onclick="stopSpeech()" class="flex-1 bg-slate-100 text-slate-700 font-black rounded-2xl py-3 text-lg shadow-sm active:scale-95 transition text-center">🏠 回首頁</a>
+                    </div>
+                    ${playBtnHTML()}`;
+            }
+
+            area.innerHTML = `
+                <div class="pop bg-white rounded-3xl shadow-md border-2 overflow-hidden" style="border-color:${c.color}">
+                    ${top}
+                    <div class="p-5 space-y-4">${body}</div>
+                </div>`;
+
+            document.getElementById('progressText').innerText = `${current + 1} / ${cards.length}`;
+            document.getElementById('prevBtn').disabled = current === 0;
+            document.getElementById('nextBtn').disabled = current === cards.length - 1;
+            updateTabs();
+        }
+
+        // ================= 互動 =================
+        document.getElementById('cardArea').addEventListener('click', e => {
+            const opt = e.target.closest('.opt-btn');
+            if (opt && answered[current] === undefined) {
+                const idx = Number(opt.dataset.idx);
+                answered[current] = idx;
+                const c = cards[current];
+                renderCard();
+                speak(idx === c.correct ? `答對了！好棒！${c.exp}` : `哎呀，答錯了喔！${c.exp}`);
+                return;
+            }
+            const go2 = e.target.closest('.goto-btn');
+            if (go2) {
+                current = Number(go2.dataset.goto);
+                stopSpeech();
+                renderCard();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        function go(step) {
+            const next = current + step;
+            if (next < 0 || next >= cards.length) return;
+            current = next;
+            stopSpeech();
+            renderCard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function jumpTo(kind) {
+            stopSpeech();
+            if (kind === 'lesson') current = LESSON_IDX[0];
+            else if (kind === 'quiz') {
+                // 跳到第一題尚未作答的測驗，全部答完則回到第一題
+                const firstOpen = QUIZ_IDX.find(i => answered[i] === undefined);
+                current = firstOpen !== undefined ? firstOpen : QUIZ_IDX[0];
+            } else current = RESULT_IDX;
+            renderCard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function restart() {
+            stopSpeech();
+            answered = {};
+            current = 0;
+            renderCard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        renderCard();
+    </script>
+</body>
+</html>

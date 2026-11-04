@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公升與毫升 - 語音學習網頁｜小豆豆數學樂園</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7FB;
+            color: #2D3748;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.94); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop { animation: popIn 0.25s ease-out both; }
+        @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
+        /* 隱藏數字輸入框的上下箭頭 */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <!-- 頂部：標題列 + 分頁按鈕 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-xl mx-auto px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-black text-slate-700 leading-tight truncate">💧 公升與毫升</h1>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">第八課 · 容量</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap">
+                    ⭐ <span id="scoreDisplay">0</span> / <span class="qTotal">16</span>
+                </div>
+                <button onclick="stopSpeech()" class="bg-rose-50 text-rose-600 px-2.5 py-1.5 rounded-full text-xs font-bold active:scale-95 transition whitespace-nowrap" title="停止朗讀">⏹ 停止</button>
+            </div>
+        </div>
+        <div class="max-w-xl mx-auto px-3 pb-3 flex items-center gap-2">
+            <button id="tabLearn" onclick="switchTab('learn')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">📖 學習單元</button>
+            <button id="tabQuiz" onclick="switchTab('quiz')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">✏️ 學習評量</button>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 py-5 space-y-5">
+
+        <!-- ================= 學習單元 ================= -->
+        <section id="learnSection" class="space-y-5">
+            <h2 class="font-extrabold text-slate-700 text-base px-1">📚 點按鈕，聽聽看怎麼讀！</h2>
+            <div id="learnCards" class="space-y-5"></div>
+            <div class="text-center">
+                <button onclick="switchTab('quiz')" class="bg-indigo-600 text-white font-black px-8 py-3 rounded-2xl shadow-md active:scale-95 transition text-lg">✏️ 學完了，去做評量</button>
+            </div>
+        </section>
+
+        <!-- ================= 學習評量 ================= -->
+        <section id="quizSection" class="hidden">
+            <div id="quizArea"></div>
+        </section>
+
+        <div class="text-center pt-2">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+    </main>
+
+    <!-- 提示視窗（取代 alert） -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-base text-slate-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 小圖示（SVG） =================
+        function svgWrap(inner) {
+            return `<svg viewBox="0 0 160 100" class="w-full h-32" role="img" aria-hidden="true">${inner}</svg>`;
+        }
+
+        // 一大罐鮮奶 2 L、一小口水 10 mL
+        function sizeSVG() {
+            return svgWrap(`
+                <rect x="40" y="14" width="14" height="12" rx="3" fill="#ffffff" stroke="#5b7f95" stroke-width="2.5"/>
+                <rect x="28" y="24" width="38" height="58" rx="9" fill="#bfdbfe" stroke="#3b82f6" stroke-width="3"/>
+                <text x="47" y="58" font-size="15" font-weight="900" fill="#1d4ed8" text-anchor="middle">2 L</text>
+                <text x="47" y="95" font-size="9" font-weight="700" fill="#475569" text-anchor="middle">一大罐鮮奶</text>
+                <path d="M104 52 L134 52 L128 82 L110 82 Z" fill="#bae6fd" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+                <text x="119" y="72" font-size="9" font-weight="900" fill="#0369a1" text-anchor="middle">10 mL</text>
+                <text x="119" y="95" font-size="9" font-weight="700" fill="#475569" text-anchor="middle">一小口水</text>`);
+        }
+
+        // 1 公升 = 1000 毫升
+        function convertSVG() {
+            return svgWrap(`
+                <rect x="14" y="16" width="52" height="52" rx="8" fill="#bfdbfe" stroke="#3b82f6" stroke-width="3"/>
+                <text x="40" y="38" font-size="12" font-weight="900" fill="#1d4ed8" text-anchor="middle">1 公升</text>
+                <text x="40" y="56" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">1 L</text>
+                <text x="80" y="48" font-size="26" font-weight="900" fill="#475569" text-anchor="middle">=</text>
+                <rect x="94" y="16" width="52" height="52" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="3"/>
+                <text x="120" y="38" font-size="12" font-weight="900" fill="#92400e" text-anchor="middle">1000</text>
+                <text x="120" y="56" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">毫升 mL</text>
+                <text x="80" y="90" font-size="11" font-weight="900" fill="#475569" text-anchor="middle">1 公升 300 毫升 = 1300 毫升</text>`);
+        }
+
+        // 滿 1000 毫升要進位
+        function carrySVG() {
+            return svgWrap(`
+                <text x="80" y="26" font-size="15" font-weight="900" fill="#475569" text-anchor="middle">800 mL + 500 mL</text>
+                <text x="80" y="50" font-size="15" font-weight="900" fill="#d97706" text-anchor="middle">= 1300 mL</text>
+                <rect x="30" y="58" width="100" height="26" rx="13" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+                <text x="80" y="77" font-size="14" font-weight="900" fill="#166534" text-anchor="middle">= 1 L 300 mL</text>
+                <text x="80" y="95" font-size="9" font-weight="700" fill="#64748b" text-anchor="middle">滿 1000 毫升，進位成 1 公升</text>`);
+        }
+
+        // ================= 學習單元資料 =================
+        const learnCards = [
+            {
+                emoji: '🥛', title: '1. 認識公升與毫升', band: '#DCE6D0', border: '#9fb48a',
+                visual: sizeSVG,
+                body: `<p class="text-[22px] leading-relaxed font-medium text-slate-700">公升（L）與毫升（mL）是常見的容量單位。例如：一大罐鮮奶大約是 2 公升，而喝一小口水大約是 10 毫升。</p>`,
+                speech: '認識公升與毫升。公升與毫升是常見的容量單位。例如：一大罐鮮奶大約是2公升，而喝一小口水大約是10毫升。'
+            },
+            {
+                emoji: '🔄', title: '2. 容量的換算', band: '#D3DEE6', border: '#8fa9b8',
+                visual: convertSVG,
+                body: `
+                    <p class="text-[22px] leading-relaxed font-medium text-slate-700">記住這個重要公式：</p>
+                    <p class="text-[30px] font-black text-[#4f7488] bg-slate-50 rounded-2xl px-4 py-3 inline-block">1 公升 = 1000 毫升</p>
+                    <p class="text-[22px] leading-relaxed font-medium text-slate-700">例如：1 公升 300 毫升，換算後就是 1300 毫升。</p>`,
+                speech: '容量的換算。記住這個重要公式：1公升等於1000毫升。例如：1公升300毫升，換算後就是1300毫升。'
+            },
+            {
+                emoji: '➕', title: '3. 容量的加減法', band: '#E8DDD2', border: '#c2a98f',
+                visual: carrySVG,
+                body: `
+                    <p class="text-[22px] leading-relaxed font-medium text-slate-700">計算時，公升與公升相加減，毫升與毫升相加減。特別注意，當毫升相加<b>滿 1000</b> 時，記得要進位變成 1 公升喔！</p>
+                    <div class="bg-slate-50 rounded-2xl p-4 text-[22px] font-bold text-slate-700 leading-relaxed">例如：800 毫升 + 500 毫升 = 1300 毫升<br>也就是 1 公升 300 毫升。</div>`,
+                speech: '容量的加減法。計算時，公升與公升相加減，毫升與毫升相加減。特別注意，當毫升相加滿1000時，記得要進位變成1公升喔！例如：800毫升加500毫升，等於1300毫升，也就是1公升300毫升。'
+            }
+        ];
+
+        // ================= 評量題庫（全部已驗算） =================
+        const quizData = [
+            { question: '請問，1 公升等於多少毫升？', answer: 1000, unit: '毫升',
+              hint: '記住公式：1 公升 = 1000 毫升。',
+              explanation: '答對了！1 公升等於 1000 毫升。' },
+            { question: '3000 毫升等於幾公升？', answer: 3, unit: '公升',
+              hint: '1000 毫升是 1 公升，3000 裡面有幾個 1000？',
+              explanation: '答對了！3000 毫升就是 3 公升。' },
+            { question: '將水倒入量杯中，3 公升又 500 毫升，合起來總共是多少毫升？', answer: 3500, unit: '毫升',
+              hint: '先把 3 公升換成 3000 毫升，再加 500 毫升。',
+              explanation: '答對了！3 公升等於 3000 毫升，加上 500 毫升總共是 3500 毫升。' },
+            { question: '媽媽買了 2 瓶米漿，一瓶是 1250 毫升，另一瓶是 350 毫升，合起來是多少毫升？', answer: 1600, unit: '毫升',
+              hint: '算 1250 + 350，從個位開始，滿十要進位。',
+              explanation: '答對了！1250 毫升加上 350 毫升，等於 1600 毫升。' },
+            { question: '4025 毫升，等於幾公升又幾毫升？請輸入前面的公升數字即可。', answer: 4, unit: '公升',
+              hint: '4025 裡面有 4 個 1000，還多出 25。',
+              explanation: '答對了！4025 毫升等於 4 公升又 25 毫升，公升數字是 4。' },
+            { question: '一瓶果汁 1 公升 300 毫升，也就是幾毫升？', answer: 1300, unit: '毫升',
+              hint: '1 公升是 1000 毫升，再加 300 毫升。',
+              explanation: '答對了！1 公升是 1000 毫升，加上 300 毫升，就是 1300 毫升。' },
+            { question: '1177 毫升，可以說是 1 公升又幾毫升？請輸入毫升的數字。', answer: 177, unit: '毫升',
+              hint: '1177 − 1000 = ？',
+              explanation: '答對了！1177 毫升是 1 公升又 177 毫升。' },
+            { question: '2 公升 70 毫升，等於多少毫升？', answer: 2070, unit: '毫升',
+              hint: '2 公升是 2000 毫升，70 毫升要寫成 070，合起來是 2070。',
+              explanation: '答對了！2 公升是 2000 毫升，加上 70 毫升等於 2070 毫升。小心不要算錯成 2700 喔！' },
+            { question: '3008 毫升，等於 3 公升又幾毫升？請輸入毫升的數字。', answer: 8, unit: '毫升',
+              hint: '3008 − 3000 = ？',
+              explanation: '答對了！3008 毫升是 3 公升又 8 毫升。' },
+            { question: '豆豆買了 2 瓶鮮乳，一瓶是 375 毫升，另一瓶是 290 毫升，合起來是幾毫升？', answer: 665, unit: '毫升',
+              hint: '375 + 290：個位 5+0=5，十位 7+9=16 寫 6 進 1，百位 3+2+1=6。',
+              explanation: '答對了！375 加 290 等於 665 毫升。' },
+            { question: '教室裡有 2 個水桶，一個裝 19 公升，另一個裝 15 公升，2 個水桶合起來裝了幾公升的水？', answer: 34, unit: '公升',
+              hint: '算 19 + 15，單位都是公升。',
+              explanation: '答對了！19 加 15 等於 34，單位是公升。' },
+            { question: '爸爸買了 2 個保溫瓶，大瓶有 2 公升，小瓶有 150 毫升，2 個保溫瓶共可裝幾毫升的水？', answer: 2150, unit: '毫升',
+              hint: '先把 2 公升換成 2000 毫升，再加 150 毫升。',
+              explanation: '答對了！2 公升是 2000 毫升，加上 150 毫升等於 2150 毫升。' },
+            { question: '一桶冬瓜茶有 3 公升 500 毫升，喝掉 1 公升 225 毫升之後，還剩下幾毫升？', answer: 2275, unit: '毫升',
+              hint: '3 公升 500 毫升 = 3500 毫升，1 公升 225 毫升 = 1225 毫升，再算 3500 − 1225。',
+              explanation: '答對了！3500 毫升減掉 1225 毫升，剩下 2275 毫升。' },
+            { question: '把 120 毫升的蜂蜜加入 1 公升 400 毫升的水中，泡好的蜂蜜水共有幾毫升？', answer: 1520, unit: '毫升',
+              hint: '1 公升 400 毫升 = 1400 毫升，再加 120 毫升。',
+              explanation: '答對了！1 公升 400 毫升是 1400 毫升，加上 120 毫升蜂蜜，等於 1520 毫升。' },
+            { question: '阿姨買了一瓶 3 公升 785 毫升的洗手乳，用掉 1250 毫升後，還剩下幾毫升？', answer: 2535, unit: '毫升',
+              hint: '3 公升 785 毫升 = 3785 毫升，再算 3785 − 1250。',
+              explanation: '答對了！3785 毫升減去 1250 毫升，等於 2535 毫升。' },
+            { question: '桌上的鍋子有 1370 毫升的水，水壺裡有 1 公升 450 毫升的水。請問水壺裡的水是多少毫升？', answer: 1450, unit: '毫升',
+              hint: '只看水壺：1 公升 450 毫升 = 1000 + 450。鍋子的水是用來混淆的喔！',
+              explanation: '答對了！1 公升 450 毫升，換算後就是 1450 毫升。' }
+        ];
+
+        const TOTAL = quizData.length;
+        let idx = 0;
+        // 每題狀態：{ value, tries, solved, firstTry, hintShown, feedback }
+        let st = quizData.map(() => ({ value: '', tries: 0, solved: false, firstTry: false, hintShown: false, feedback: null }));
+
+        // ================= 工具 =================
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function getScore() {
+            return st.filter(s => s.firstTry).length;
+        }
+
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            const m = document.getElementById('noticeModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeNotice() {
+            const m = document.getElementById('noticeModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ================= 語音 =================
+        let activeBtn = null;
+        let activeUtt = null;
+
+        function toSpeech(text) {
+            return text
+                .replace(/（L）|（mL）|\(L\)|\(mL\)/g, '')
+                .replace(/\bmL\b/g, '毫升')
+                .replace(/\bL\b/g, '公升')
+                .replace(/\+/g, ' 加 ')
+                .replace(/[−-]\s/g, ' 減 ')
+                .replace(/=/g, ' 等於 ')
+                .replace(/[？?]/g, '？');
+        }
+
+        function resetActiveBtn() {
+            if (activeBtn) {
+                activeBtn.innerText = activeBtn.dataset.label;
+                activeBtn.classList.remove('opacity-75');
+                activeBtn = null;
+            }
+        }
+
+        function speak(text, btn) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音功能，建議使用 Chrome 或 Safari。');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            resetActiveBtn();
+
+            const u = new SpeechSynthesisUtterance(toSpeech(text));
+            u.lang = 'zh-TW';
+            u.rate = 0.9;
+            activeUtt = u;
+
+            if (btn && btn.dataset.label) {
+                btn.innerText = '🗣️ 播放中...';
+                btn.classList.add('opacity-75');
+                activeBtn = btn;
+            }
+            const done = () => { if (activeUtt === u) { resetActiveBtn(); activeUtt = null; } };
+            u.onend = done;
+            u.onerror = done;
+            window.speechSynthesis.speak(u);
+        }
+
+        function stopSpeech() {
+            activeUtt = null;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            resetActiveBtn();
+        }
+
+        window.addEventListener('pagehide', stopSpeech);
+
+        // ================= 分頁 =================
+        const TAB_ON = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-indigo-600 text-white shadow-md';
+        const TAB_OFF = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-slate-100 text-slate-600';
+
+        function switchTab(tab) {
+            stopSpeech();
+            const isLearn = tab === 'learn';
+            document.getElementById('learnSection').classList.toggle('hidden', !isLearn);
+            document.getElementById('quizSection').classList.toggle('hidden', isLearn);
+            document.getElementById('tabLearn').className = isLearn ? TAB_ON : TAB_OFF;
+            document.getElementById('tabQuiz').className = isLearn ? TAB_OFF : TAB_ON;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= 學習單元 =================
+        function renderLearn() {
+            document.getElementById('learnCards').innerHTML = learnCards.map((c, i) => `
+                <div class="pop bg-white rounded-3xl shadow-md border-2 overflow-hidden" style="border-color:${c.border}">
+                    <div class="p-3" style="background:${c.band}">${c.visual()}</div>
+                    <div class="p-5 space-y-4">
+                        <h3 class="text-[28px] font-black text-slate-800 flex items-center gap-2"><span>${c.emoji}</span>${c.title}</h3>
+                        ${c.body}
+                        <button type="button" data-learn="${i}" data-label="🔊 朗讀內容"
+                                class="learn-play w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-4 text-[22px] font-black shadow-md active:scale-[.98] transition">🔊 朗讀內容</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        document.getElementById('learnCards').addEventListener('click', e => {
+            const b = e.target.closest('.learn-play');
+            if (b) speak(learnCards[Number(b.dataset.learn)].speech, b);
+        });
+
+        // ================= 學習評量 =================
+        function feedbackHTML(s, q) {
+            if (!s.feedback) return '';
+            if (s.feedback === 'ok') {
+                return `<div class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl p-4 text-[20px] leading-relaxed font-bold">✅ ${esc(q.explanation)}</div>`;
+            }
+            if (s.feedback === 'empty') {
+                return `<div class="bg-amber-50 text-amber-800 border border-amber-200 rounded-2xl p-4 text-[20px] font-bold">✏️ 請先輸入數字喔！</div>`;
+            }
+            return `<div class="bg-rose-50 text-rose-800 border border-rose-200 rounded-2xl p-4 text-[20px] font-bold">❌ 答錯了，請再想一想喔！</div>`;
+        }
+
+        function renderQuiz() {
+            const area = document.getElementById('quizArea');
+            document.getElementById('scoreDisplay').innerText = getScore();
+
+            if (idx >= TOTAL) { renderResult(area); return; }
+
+            const q = quizData[idx];
+            const s = st[idx];
+            const isLast = idx === TOTAL - 1;
+            const hint = s.hintShown
+                ? `<div class="bg-amber-50 text-amber-900 border border-amber-200 rounded-2xl p-4 text-[20px] leading-relaxed">💡 ${esc(q.hint)}</div>` : '';
+
+            area.innerHTML = `
+                <div class="pop bg-white rounded-3xl border-2 shadow-md p-5 space-y-4" style="border-color:#c9bfb5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-black bg-indigo-600 text-white px-3 py-1 rounded-full">✏️ 第 ${idx + 1} / ${TOTAL} 題</span>
+                        <button type="button" onclick="readQuestion()" data-label="🔊 讀題目" id="readBtn"
+                                class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full text-base font-black active:scale-95 transition">🔊 讀題目</button>
+                    </div>
+                    <p class="text-[24px] font-bold text-slate-800 leading-snug">${esc(q.question)}</p>
+
+                    <div class="flex items-center gap-3">
+                        <input id="answerInput" type="number" inputmode="numeric" value="${esc(s.value)}" placeholder="輸入數字" ${s.solved ? 'disabled' : ''}
+                               class="flex-1 min-w-0 border-2 ${s.solved ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300'} rounded-2xl px-4 py-3 text-[26px] font-black text-center text-slate-700 focus:outline-none focus:border-indigo-500">
+                        <span class="text-[22px] font-black text-slate-600 whitespace-nowrap">${esc(q.unit)}</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="button" onclick="checkAnswer()" ${s.solved ? 'disabled' : ''}
+                                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl py-3 text-[20px] font-black shadow-md active:scale-95 transition disabled:opacity-40 disabled:pointer-events-none">✔️ 送出答案</button>
+                        <button type="button" onclick="toggleHint()"
+                                class="shrink-0 bg-amber-100 text-amber-800 rounded-2xl px-5 py-3 text-[20px] font-black active:scale-95 transition">💡 提示</button>
+                    </div>
+
+                    ${hint}
+                    ${feedbackHTML(s, q)}
+
+                    <div class="flex gap-2 pt-1">
+                        <button type="button" onclick="goQ(-1)" ${idx === 0 ? 'disabled' : ''}
+                                class="flex-1 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl py-3 text-[18px] font-bold active:scale-95 transition disabled:opacity-40 disabled:pointer-events-none">⬅️ 上一題</button>
+                        <button type="button" onclick="goQ(1)"
+                                class="flex-1 ${s.solved ? 'bg-slate-800 text-white shadow-md' : 'bg-slate-100 text-slate-600'} rounded-2xl py-3 text-[18px] font-bold active:scale-95 transition">${isLast ? '看成績 🏁' : '下一題 ➡️'}</button>
+                    </div>
+                </div>`;
+
+            const input = document.getElementById('answerInput');
+            input.addEventListener('input', () => { s.value = input.value; });
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); });
+        }
+
+        function renderResult(area) {
+            const score = getScore();
+            const solved = st.filter(s => s.solved).length;
+            let emoji, msg;
+            if (score === TOTAL) { emoji = '🏆'; msg = '一次全對！你是容量小達人！'; }
+            else if (score >= 12) { emoji = '🌟'; msg = '很棒喔！再細心一點就更完美了！'; }
+            else if (score >= 8) { emoji = '👍'; msg = '不錯喔！看看沒答對的題目，再試一次吧！'; }
+            else { emoji = '💪'; msg = '沒關係！回去看看學習單元，再來挑戰！'; }
+
+            const chips = st.map((s, i) => {
+                let cls = 'bg-slate-100 text-slate-500 border-slate-200', mark = '⚪';
+                if (s.firstTry) { cls = 'bg-emerald-50 text-emerald-700 border-emerald-300'; mark = '✅'; }
+                else if (s.solved) { cls = 'bg-amber-50 text-amber-700 border-amber-300'; mark = '🔁'; }
+                return `<button type="button" data-goto="${i}" class="goto-btn border-2 rounded-2xl py-1.5 text-sm font-black active:scale-95 transition ${cls}">${mark}<br>${i + 1}</button>`;
+            }).join('');
+
+            area.innerHTML = `
+                <div class="pop bg-white rounded-3xl border-2 border-amber-200 shadow-md p-5 space-y-4 text-center">
+                    <div class="text-6xl">${emoji}</div>
+                    <div class="text-[40px] font-black text-amber-600">${score}<span class="text-xl text-slate-400"> / ${TOTAL} 題</span></div>
+                    <p class="text-[20px] font-bold text-slate-600 leading-relaxed">${msg}</p>
+                    <p class="text-sm text-slate-500 font-medium">✅ 一次答對　🔁 再試後答對　⚪ 還沒答對（共答對 ${solved} 題）<br>點題號可以回去再寫喔！</p>
+                    <div class="grid grid-cols-8 gap-1.5">${chips}</div>
+                    <div class="flex gap-2">
+                        <button onclick="restartQuiz()" class="flex-1 bg-indigo-600 text-white font-black rounded-2xl py-3 text-lg shadow-md active:scale-95 transition">🔄 重新挑戰</button>
+                        <button onclick="switchTab('learn')" class="flex-1 bg-slate-100 text-slate-700 font-black rounded-2xl py-3 text-lg shadow-sm active:scale-95 transition">📖 看學習單元</button>
+                    </div>
+                    <a href="index.html" onclick="stopSpeech()" class="block bg-white border-2 border-slate-200 text-slate-700 font-black rounded-2xl py-3 text-lg active:scale-95 transition">🏠 回首頁</a>
+                </div>`;
+            speak(`評量結束！你一次答對了 ${score} 題，總共 ${TOTAL} 題。`);
+        }
+
+        function readQuestion() {
+            speak(`第 ${idx + 1} 題。${quizData[idx].question}`, document.getElementById('readBtn'));
+        }
+
+        function toggleHint() {
+            const s = st[idx];
+            s.hintShown = !s.hintShown;
+            renderQuiz();
+            if (s.hintShown) speak(quizData[idx].hint);
+        }
+
+        function checkAnswer() {
+            const s = st[idx];
+            const q = quizData[idx];
+            if (s.solved) return;
+            const raw = (document.getElementById('answerInput').value || '').trim();
+            s.value = raw;
+
+            if (raw === '') {
+                s.feedback = 'empty';
+                renderQuiz();
+                speak('請先輸入數字喔！');
+                return;
+            }
+
+            s.tries++;
+            if (Number(raw) === q.answer) {
+                s.solved = true;
+                s.feedback = 'ok';
+                if (s.tries === 1) s.firstTry = true;
+                renderQuiz();
+                speak(q.explanation);
+            } else {
+                s.feedback = 'wrong';
+                s.hintShown = true;   // 答錯時自動顯示提示
+                renderQuiz();
+                speak('答錯了，請再想一想喔！');
+            }
+        }
+
+        function goQ(step) {
+            stopSpeech();
+            idx = Math.min(Math.max(idx + step, 0), TOTAL);
+            renderQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('quizArea').addEventListener('click', e => {
+            const g = e.target.closest('.goto-btn');
+            if (g) {
+                idx = Number(g.dataset.goto);
+                stopSpeech();
+                renderQuiz();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        function restartQuiz() {
+            stopSpeech();
+            st = quizData.map(() => ({ value: '', tries: 0, solved: false, firstTry: false, hintShown: false, feedback: null }));
+            idx = 0;
+            renderQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= 初始化 =================
+        document.querySelectorAll('.qTotal').forEach(el => { el.innerText = TOTAL; });
+        renderLearn();
+        renderQuiz();
+        switchTab('learn');
+    </script>
+</body>
+</html>

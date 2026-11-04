@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國小除法語音學習網頁｜小豆豆數學樂園</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7FB;
+            color: #2D3748;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.94); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop { animation: popIn 0.25s ease-out both; }
+        @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <!-- 頂部：標題列 + 分頁按鈕 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-xl mx-auto px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <!-- 回首頁按鈕 -->
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-black text-slate-700 leading-tight truncate">🍰 除法小教室</h1>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">第七課 · 除法</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap">
+                    ⭐ <span id="scoreDisplay">0</span> / <span class="qTotal">8</span>
+                </div>
+                <button onclick="stopSpeech()" class="bg-rose-50 text-rose-600 px-2.5 py-1.5 rounded-full text-xs font-bold active:scale-95 transition whitespace-nowrap" title="停止朗讀">⏹ 停止</button>
+            </div>
+        </div>
+        <div class="max-w-xl mx-auto px-3 pb-3 flex items-center gap-2">
+            <button id="tabLearn" onclick="switchTab('learn')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">📖 學習卡片</button>
+            <button id="tabQuiz" onclick="switchTab('quiz')" class="flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95">✏️ 學習評量</button>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 py-5 space-y-5">
+
+        <!-- ================= 學習卡片 ================= -->
+        <section id="learnSection" class="space-y-5">
+            <div class="flex items-center justify-between px-1">
+                <h2 class="font-extrabold text-slate-700 text-base">📚 點按鈕，聽聽看怎麼讀！</h2>
+            </div>
+            <div id="learnCards" class="space-y-5"></div>
+            <div class="text-center">
+                <button onclick="switchTab('quiz')" class="bg-indigo-600 text-white font-black px-8 py-3 rounded-2xl shadow-md active:scale-95 transition text-lg">✏️ 學完了，去做評量</button>
+            </div>
+        </section>
+
+        <!-- ================= 學習評量 ================= -->
+        <section id="quizSection" class="hidden space-y-5">
+            <div id="resultCard" class="hidden"></div>
+            <div id="quizList" class="space-y-4"></div>
+        </section>
+
+        <div class="text-center pt-2">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+    </main>
+
+    <!-- 提示視窗（取代 alert） -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-base text-slate-600 leading-relaxed"></p>
+            <button onclick="closeNotice()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 小圖示（SVG） =================
+        function svgWrap(inner) {
+            return `<svg viewBox="0 0 160 100" class="w-full h-32" role="img" aria-hidden="true">${inner}</svg>`;
+        }
+
+        // 盤子與點點：groups 個盤子，每盤 per 個，extra 為剩下的個數
+        function platesSVG(groups, per, extra, color, caption) {
+            const gap = 34;
+            const w = groups * gap + (extra ? 22 : 0);
+            const x0 = (160 - w) / 2 + gap / 2;
+            const offs = [[-6, 5], [6, 5], [0, -6]];
+            let s = '';
+            for (let g = 0; g < groups; g++) {
+                const cx = x0 + g * gap;
+                s += `<circle cx="${cx}" cy="40" r="15" fill="#ffffff" stroke="${color}" stroke-width="2.5"/>`;
+                for (let k = 0; k < per; k++) {
+                    s += `<circle cx="${cx + offs[k][0]}" cy="${40 + offs[k][1]}" r="3.6" fill="${color}"/>`;
+                }
+            }
+            if (extra) {
+                const ex = x0 + groups * gap - gap / 2 + 24;
+                for (let k = 0; k < extra; k++) {
+                    s += `<circle cx="${ex}" cy="${40 + k * 10}" r="4.6" fill="#C49799" stroke="#9f6f72" stroke-width="1.5"/>`;
+                }
+                s += `<text x="${ex}" y="68" font-size="9" font-weight="900" fill="#9f6f72" text-anchor="middle">餘 ${extra}</text>`;
+            }
+            s += `<text x="80" y="90" font-size="11" font-weight="900" fill="#475569" text-anchor="middle">${caption}</text>`;
+            return svgWrap(s);
+        }
+
+        // 餘數一定比除數小
+        function ruleSVG() {
+            return svgWrap(`
+                <text x="80" y="34" font-size="20" font-weight="900" fill="#475569" text-anchor="middle">13 ÷ 3 = 4 … 1</text>
+                <rect x="34" y="46" width="92" height="30" rx="15" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+                <text x="80" y="67" font-size="17" font-weight="900" fill="#166534" text-anchor="middle">1 &lt; 3　✓</text>
+                <text x="80" y="92" font-size="10" font-weight="700" fill="#64748b" text-anchor="middle">餘數一定要比除數小</text>`);
+        }
+
+        // 天鵝船：8 艘坐滿，再多 1 艘
+        function boatsSVG() {
+            let s = '';
+            for (let i = 0; i < 9; i++) {
+                const x = 8 + i * 16;
+                if (i < 8) {
+                    s += `<rect x="${x}" y="34" width="13" height="10" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1.8"/>`;
+                } else {
+                    s += `<rect x="${x}" y="34" width="13" height="10" rx="4" fill="#ffffff" stroke="#d97706" stroke-width="1.8" stroke-dasharray="3 2"/>`;
+                    s += `<text x="${x + 6.5}" y="58" font-size="9" font-weight="900" fill="#d97706" text-anchor="middle">2人</text>`;
+                }
+            }
+            s += `<text x="72" y="26" font-size="9" font-weight="700" fill="#92400e" text-anchor="middle">8 艘，每艘坐滿 4 人</text>`;
+            s += `<text x="80" y="82" font-size="11" font-weight="900" fill="#92400e" text-anchor="middle">8 + 1 = 9 艘</text>`;
+            return svgWrap(s);
+        }
+
+        // ================= 學習卡片資料 =================
+        const learnCards = [
+            {
+                emoji: '🍰', title: '認識整除', band: '#DCE6E8', border: '#8DA3A6', tone: 'text-slate-700',
+                visual: () => platesSVG(4, 3, 0, '#8DA3A6', '12 個蛋塔，每盤 3 個，剛好 4 盤'),
+                body: `
+                    <p class="inline-block text-[22px] font-black bg-slate-100 text-slate-700 px-4 py-2 rounded-xl">被除數 ÷ 除數 = 商</p>
+                    <div class="bg-slate-50 rounded-2xl p-4 space-y-2">
+                        <p class="text-[22px] leading-relaxed">12 個蛋塔，3 個裝一盤，可以裝成幾盤？</p>
+                        <p class="text-[30px] font-black text-[#6f8b8e] tracking-wide">12 ÷ 3 = 4 <span class="text-[22px] font-medium text-slate-600">盤。</span></p>
+                    </div>`,
+                speech: '認識整除。被除數，除以，除數，等於，商。例題：12個蛋塔，3個裝一盤，可以裝成幾盤？ 12除以3，等於4盤。'
+            },
+            {
+                emoji: '🍓', title: '認識餘數', band: '#EFD9DA', border: '#C49799', tone: 'text-slate-700',
+                visual: () => platesSVG(4, 3, 1, '#C49799', '13 顆草莓，每盤 3 顆'),
+                body: `
+                    <p class="text-[22px] leading-relaxed">無法剛好平分時，就會產生<span class="font-black text-[#b07779]">餘數</span>。</p>
+                    <div class="bg-slate-50 rounded-2xl p-4 space-y-2">
+                        <p class="text-[22px] leading-relaxed">13 顆草莓，每 3 顆裝一盤：</p>
+                        <p class="text-[30px] font-black text-[#b07779] tracking-wide">13 ÷ 3 = 4 … 1</p>
+                        <p class="text-[18px] text-slate-500 bg-white rounded-lg p-2">（讀作：13 除以 3 等於 4，餘 1）</p>
+                    </div>`,
+                speech: '認識餘數。無法剛好平分時，就會產生餘數。例題：13顆草莓，每3顆裝一盤，13除以3，等於4，餘1。'
+            },
+            {
+                emoji: '📏', title: '餘數的規則', band: '#DDE6DA', border: '#94A68D', tone: 'text-slate-700',
+                visual: () => ruleSVG(),
+                body: `
+                    <p class="text-[22px] leading-relaxed">餘數為 0 時稱為<span class="font-black">整除</span>。</p>
+                    <div class="bg-slate-50 border-l-[6px] rounded-r-2xl p-4 space-y-1" style="border-color:#94A68D">
+                        <p class="text-[20px] text-slate-600">重點記起來：</p>
+                        <p class="text-[28px] font-black text-[#D16D6A] leading-snug">餘數一定要比除數小！</p>
+                    </div>`,
+                speech: '餘數的規則。餘數為 0 時稱為整除。重點強調：餘數，一定要比除數小！'
+            },
+            {
+                emoji: '🦢', title: '除法應用', band: '#F2E8D4', border: '#D4BB92', tone: 'text-slate-700',
+                visual: () => boatsSVG(),
+                body: `
+                    <p class="text-[22px] leading-relaxed">遇到生活問題時，要注意<span class="font-black border-b-4" style="border-color:#D4BB92">剩下的數量</span>是否需要多算一次。</p>
+                    <div class="bg-slate-50 rounded-2xl p-4 space-y-2">
+                        <p class="text-[22px] leading-relaxed">34 個小朋友坐天鵝船，一艘坐 4 個人，</p>
+                        <p class="text-[28px] font-black text-slate-700 tracking-wide">34 ÷ 4 = 8 … 2</p>
+                        <p class="text-[20px] text-slate-600 border-t-2 border-slate-200 pt-2 leading-relaxed">
+                            剩下的 <span class="font-black text-[#b8955a] text-[24px]">2</span> 人也要坐船，所以最少需要
+                            <span class="font-black text-[#b8955a] text-[24px] bg-amber-50 px-2 rounded">8 + 1 = 9</span> 艘船。
+                        </p>
+                    </div>`,
+                speech: '除法應用。遇到生活問題時，要注意剩下的數量是否需要多算一次。例題：34個小朋友坐天鵝船，一艘坐4個人。34除以4，等於8，餘2。剩下的2人也要坐船，所以最少需要，8加1，等於9艘船。'
+            }
+        ];
+
+        // ================= 評量題庫（全部已驗算） =================
+        const quizBank = [
+            { q: '有 24 顆糖果，平分給 6 個人，每個人分到幾顆糖果？',
+              opts: ['4 顆', '3 顆', '5 顆'], a: 0,
+              exp: '24 ÷ 6 = 4，每個人分到 4 顆。' },
+            { q: '13 顆草莓，每 3 顆裝一盤，最多可以裝幾盤？剩下幾顆？',
+              opts: ['4 盤剩 1 顆', '3 盤剩 4 顆', '5 盤剩 0 顆'], a: 0,
+              exp: '13 ÷ 3 = 4 … 1，最多裝 4 盤，剩下 1 顆。' },
+            { q: '50 公分長的緞帶，每 8 公分剪成一段，最多可以剪成幾段？還剩下幾公分？',
+              opts: ['6 段剩 2 公分', '5 段剩 10 公分', '7 段剩 0 公分'], a: 0,
+              exp: '50 ÷ 8 = 6 … 2，最多剪 6 段，剩下 2 公分。' },
+            { q: '一包餅乾有 40 片，平分裝到 5 個盤子裡，會剩下幾片餅乾？',
+              opts: ['0 片', '5 片', '8 片'], a: 0,
+              exp: '40 ÷ 5 = 8，剛好分完，餘數是 0，剩下 0 片。' },
+            { q: '飼育員把一桶魚平分給 6 隻企鵝，最後「不可能」剩下幾條魚？',
+              opts: ['5 條', '3 條', '8 條'], a: 2,
+              exp: '餘數一定要比除數小。除數是 6，餘數只可能是 0 到 5，所以不可能剩下 8 條。' },
+            { q: '媽媽做了 32 個點心，每 6 個裝成一盒，最多可以裝滿幾盒？',
+              opts: ['5 盒', '6 盒', '4 盒'], a: 0,
+              exp: '32 ÷ 6 = 5 … 2，最多裝滿 5 盒，還剩 2 個。' },
+            { q: '有 34 個小朋友要坐天鵝船，一艘船可以坐 4 個人，最少需要幾艘船才夠坐？',
+              opts: ['8 艘', '9 艘', '10 艘'], a: 1,
+              exp: '34 ÷ 4 = 8 … 2，剩下的 2 人也要坐船，所以 8 + 1 = 9 艘。' },
+            { q: '老師請 46 個小朋友吃布丁，一盒布丁有 6 個，老師最少要買幾盒才夠？',
+              opts: ['7 盒', '8 盒', '9 盒'], a: 1,
+              exp: '46 ÷ 6 = 7 … 4，剩下的 4 個小朋友也要吃，所以 7 + 1 = 8 盒。' }
+        ];
+
+        const LABELS = ['①', '②', '③'];
+        const STATE = {
+            def:   'border-slate-200 bg-white text-slate-800',
+            right: 'border-emerald-500 bg-emerald-50 text-emerald-800',
+            wrong: 'border-rose-500 bg-rose-50 text-rose-800',
+            dim:   'border-slate-100 bg-slate-50 text-slate-400'
+        };
+        const QCOLORS = ['#8DA3A6', '#C49799', '#94A68D', '#D4BB92'];
+
+        let quiz = [];       // 打亂選項後的題目 [{q, opts:[{text, correct}], exp}]
+        let answers = {};    // { 題號: 選擇的選項索引 }
+
+        // ================= 工具 =================
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            const m = document.getElementById('noticeModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeNotice() {
+            const m = document.getElementById('noticeModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ================= 語音 =================
+        let activeBtn = null;
+        let activeUtt = null;
+
+        function toSpeech(text) {
+            return text
+                .replace(/÷/g, ' 除以 ')
+                .replace(/…/g, ' 餘 ')
+                .replace(/=/g, ' 等於 ')
+                .replace(/\+/g, ' 加 ')
+                .replace(/</g, ' 小於 ');
+        }
+
+        function resetActiveBtn() {
+            if (activeBtn) {
+                activeBtn.innerText = activeBtn.dataset.label;
+                activeBtn.classList.remove('opacity-75');
+                activeBtn = null;
+            }
+        }
+
+        function speak(text, btn) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音朗讀功能，建議使用 Chrome 或 Safari。');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            resetActiveBtn();
+
+            const u = new SpeechSynthesisUtterance(toSpeech(text));
+            u.lang = 'zh-TW';
+            u.rate = 0.85;   // 放慢語速，適合小朋友
+            u.pitch = 1.1;
+            activeUtt = u;
+
+            if (btn && btn.dataset.label) {
+                btn.innerText = '🗣️ 播放中...';
+                btn.classList.add('opacity-75');
+                activeBtn = btn;
+            }
+            const done = () => { if (activeUtt === u) { resetActiveBtn(); activeUtt = null; } };
+            u.onend = done;
+            u.onerror = done;
+            window.speechSynthesis.speak(u);
+        }
+
+        function stopSpeech() {
+            activeUtt = null;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            resetActiveBtn();
+        }
+
+        window.addEventListener('pagehide', stopSpeech);
+
+        // ================= 分頁 =================
+        const TAB_ON = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-indigo-600 text-white shadow-md';
+        const TAB_OFF = 'flex-1 py-2 rounded-xl text-sm font-bold transition active:scale-95 bg-slate-100 text-slate-600';
+
+        function switchTab(tab) {
+            stopSpeech();
+            const isLearn = tab === 'learn';
+            document.getElementById('learnSection').classList.toggle('hidden', !isLearn);
+            document.getElementById('quizSection').classList.toggle('hidden', isLearn);
+            document.getElementById('tabLearn').className = isLearn ? TAB_ON : TAB_OFF;
+            document.getElementById('tabQuiz').className = isLearn ? TAB_OFF : TAB_ON;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= 學習卡片 =================
+        function renderLearn() {
+            document.getElementById('learnCards').innerHTML = learnCards.map((c, i) => `
+                <div class="pop bg-white rounded-3xl shadow-md border-2 overflow-hidden" style="border-color:${c.border}">
+                    <div class="p-3" style="background:${c.band}">${c.visual()}</div>
+                    <div class="p-5 space-y-4">
+                        <h3 class="text-[30px] font-black text-slate-800 flex items-center gap-2"><span>${c.emoji}</span>${c.title}</h3>
+                        ${c.body}
+                        <button type="button" data-learn="${i}" data-label="🔊 播放說明"
+                                class="learn-play w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-4 text-[22px] font-black shadow-md active:scale-[.98] transition">🔊 播放說明</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        document.getElementById('learnCards').addEventListener('click', e => {
+            const b = e.target.closest('.learn-play');
+            if (b) speak(learnCards[Number(b.dataset.learn)].speech, b);
+        });
+
+        // ================= 學習評量 =================
+        function newQuiz() {
+            quiz = quizBank.map(item => ({
+                q: item.q,
+                exp: item.exp,
+                opts: shuffle(item.opts.map((t, i) => ({ text: t, correct: i === item.a })))
+            }));
+            answers = {};
+        }
+
+        function getScore() {
+            return quiz.filter((item, i) => answers[i] !== undefined && item.opts[answers[i]].correct).length;
+        }
+
+        function renderQuiz() {
+            document.getElementById('quizList').innerHTML = quiz.map((item, i) => {
+                const done = answers[i] !== undefined;
+                const color = QCOLORS[i % QCOLORS.length];
+                const opts = item.opts.map((o, k) => {
+                    let st = 'def';
+                    if (done) {
+                        if (o.correct) st = 'right';
+                        else if (k === answers[i]) st = 'wrong';
+                        else st = 'dim';
+                    }
+                    return `<button type="button" data-q="${i}" data-k="${k}" ${done ? 'disabled' : ''}
+                        class="opt-btn w-full text-left px-4 py-3 rounded-2xl border-2 text-[22px] font-bold shadow-sm transition active:scale-[.98] flex items-center gap-2 ${STATE[st]}">
+                        <span class="shrink-0 font-black text-indigo-500">${LABELS[k]}</span><span>${esc(o.text)}</span></button>`;
+                }).join('');
+
+                let fb = '';
+                if (done) {
+                    const ok = item.opts[answers[i]].correct;
+                    const right = item.opts.find(o => o.correct).text;
+                    fb = ok
+                        ? `<div class="bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl p-4 text-[20px] leading-relaxed"><b>✅ 答對了！好棒！</b><br>💡 ${esc(item.exp)}</div>`
+                        : `<div class="bg-rose-50 text-rose-800 border border-rose-200 rounded-2xl p-4 text-[20px] leading-relaxed"><b>❌ 答錯了喔！</b>　正確答案：<b>${esc(right)}</b><br>💡 ${esc(item.exp)}</div>`;
+                }
+
+                return `
+                    <div id="q-${i}" class="bg-white rounded-3xl border-2 shadow-sm p-4 space-y-3" style="border-color:${color}">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center font-black" style="background:${color}">${i + 1}</span>
+                            <button type="button" data-read="${i}" class="read-btn bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full text-base font-black active:scale-95 transition">🔊 讀題目</button>
+                        </div>
+                        <p class="text-[22px] font-bold text-slate-800 leading-snug">${esc(item.q)}</p>
+                        <div class="space-y-3">${opts}</div>
+                        ${fb}
+                    </div>`;
+            }).join('');
+
+            document.getElementById('scoreDisplay').innerText = getScore();
+            renderResult();
+        }
+
+        function renderResult() {
+            const card = document.getElementById('resultCard');
+            const total = quiz.length;
+            const doneCount = Object.keys(answers).length;
+            if (doneCount < total) {
+                card.className = 'hidden';
+                card.innerHTML = '';
+                return;
+            }
+            const score = getScore();
+            let emoji, msg;
+            if (score === total) { emoji = '🏆'; msg = '全部答對！你是除法小達人！'; }
+            else if (score >= 6) { emoji = '🌟'; msg = '很棒喔！再細心一點就更完美了！'; }
+            else if (score >= 4) { emoji = '👍'; msg = '不錯喔！看看答錯題目的說明，再試一次吧！'; }
+            else { emoji = '💪'; msg = '沒關係！回到學習卡片再看一次，再來挑戰！'; }
+
+            card.className = 'pop';
+            card.innerHTML = `
+                <div class="bg-white rounded-3xl border-2 border-amber-200 shadow-md p-5 space-y-4 text-center">
+                    <div class="text-6xl">${emoji}</div>
+                    <div class="text-[40px] font-black text-amber-600">${score}<span class="text-xl text-slate-400"> / ${total} 題</span></div>
+                    <p class="text-[20px] font-bold text-slate-600 leading-relaxed">${msg}</p>
+                    <div class="flex gap-2">
+                        <button onclick="restartQuiz()" class="flex-1 bg-indigo-600 text-white font-black rounded-2xl py-3 text-lg shadow-md active:scale-95 transition">🔄 重新挑戰</button>
+                        <button onclick="switchTab('learn')" class="flex-1 bg-slate-100 text-slate-700 font-black rounded-2xl py-3 text-lg shadow-sm active:scale-95 transition">📖 看學習卡</button>
+                    </div>
+                    <a href="index.html" onclick="stopSpeech()" class="block bg-white border-2 border-slate-200 text-slate-700 font-black rounded-2xl py-3 text-lg active:scale-95 transition">🏠 回首頁</a>
+                </div>`;
+            speak(`評量結束！你答對了 ${score} 題，總共 ${total} 題。`);
+        }
+
+        document.getElementById('quizList').addEventListener('click', e => {
+            const read = e.target.closest('.read-btn');
+            if (read) {
+                const i = Number(read.dataset.read);
+                const item = quiz[i];
+                const opts = item.opts.map((o, k) => `選項${k + 1}，${o.text}`).join('。');
+                speak(`第 ${i + 1} 題。${item.q}。${opts}`);
+                return;
+            }
+            const opt = e.target.closest('.opt-btn');
+            if (opt) {
+                const i = Number(opt.dataset.q);
+                if (answers[i] !== undefined) return;
+                const k = Number(opt.dataset.k);
+                answers[i] = k;
+                const item = quiz[i];
+                const ok = item.opts[k].correct;
+                const y = window.scrollY;
+                renderQuiz();
+                window.scrollTo(0, y);
+                // 全部答完時成績卡會自己朗讀，其餘題目朗讀對錯與說明
+                if (Object.keys(answers).length < quiz.length) {
+                    speak((ok ? '答對了！好棒！' : '哎呀，答錯了喔！') + item.exp);
+                }
+            }
+        });
+
+        function restartQuiz() {
+            stopSpeech();
+            newQuiz();
+            renderQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ================= 初始化 =================
+        document.querySelectorAll('.qTotal').forEach(el => { el.innerText = quizBank.length; });
+        renderLearn();
+        newQuiz();
+        renderQuiz();
+        switchTab('learn');
+    </script>
+</body>
+</html>

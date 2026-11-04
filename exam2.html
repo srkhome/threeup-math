@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測驗二｜第一至第四課｜小豆豆數學樂園</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F7FB;
+            color: #2D3748;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-pop { animation: popIn 0.2s ease-out; }
+        .pop { animation: popIn 0.4s ease-out both; }
+        @media (prefers-reduced-motion: reduce) { .modal-pop, .pop { animation: none; } }
+        /* 分數：分子在上、分母在下 */
+        .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle;
+                    margin: 0 3px; font-weight: 900; line-height: 1.15; font-size: 0.95em; }
+        .fraction > span:first-child { border-bottom: 2px solid currentColor; padding: 0 4px; }
+        .fraction > span:last-child { padding: 0 4px; }
+        /* 隱藏數字輸入框的上下箭頭 */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="min-h-screen pb-28">
+
+    <!-- 頂部標題列 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-2xl mx-auto px-3 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <a href="index.html" onclick="stopSpeech()"
+                   class="shrink-0 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition whitespace-nowrap">
+                    <span>🏠</span> <span>首頁</span>
+                </a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-black text-slate-700 leading-tight truncate">測驗二</h1>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">第一課至第四課</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <div id="headerCount" class="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap">
+                    ✏️ <span id="headerAnswered">0</span>/<span class="totalQ">28</span>
+                </div>
+                <button onclick="stopSpeech()" class="bg-rose-50 text-rose-600 px-2.5 py-1.5 rounded-full text-xs font-bold active:scale-95 transition whitespace-nowrap" title="停止朗讀">⏹ 停止</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 py-4 space-y-5">
+
+        <!-- 考試說明 -->
+        <section id="introCard" class="rounded-3xl p-5 bg-gradient-to-br from-amber-100 via-orange-100 to-rose-100 border-2 border-white shadow-sm space-y-2">
+            <div class="flex items-center gap-3">
+                <div class="text-5xl">📝</div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800">測驗二｜第一至第四課</h2>
+                    <p class="text-sm text-slate-600 font-medium">共 <span class="totalQ">28</span> 題，滿分 100 分</p>
+                </div>
+            </div>
+            <ul class="text-xs text-slate-600 font-medium space-y-1 pt-1">
+                <li>⭕ 是非題 10 題（每題 2 分）　🔘 單選題 10 題（每題 4 分）　🧮 計算題 8 題（每題 5 分）</li>
+                <li>🔊 按題目旁的喇叭可以聽老師唸題目。</li>
+                <li>✅ 全部寫完按下方「交卷」，就會看到分數、答案與解析。</li>
+            </ul>
+        </section>
+
+        <!-- 成績卡（交卷後顯示） -->
+        <section id="resultCard" class="hidden"></section>
+
+        <!-- 題目區 -->
+        <div id="examBody" class="space-y-6"></div>
+
+        <div class="text-center pt-2">
+            <a href="index.html" onclick="stopSpeech()"
+               class="inline-flex items-center gap-1 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm shadow-sm border border-slate-100 active:scale-95 transition">
+                🏠 回到首頁
+            </a>
+        </div>
+    </main>
+
+    <!-- 底部操作列 -->
+    <div class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 shadow-lg">
+        <div class="max-w-2xl mx-auto px-4 py-3">
+            <div id="barExam" class="flex items-center gap-3">
+                <div class="text-sm font-bold text-slate-600">已作答 <span id="answeredCount">0</span> / <span class="totalQ">28</span></div>
+                <button onclick="submitExam()" class="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-2.5 rounded-2xl shadow-md active:scale-95 transition">📝 交卷</button>
+            </div>
+            <div id="barDone" class="hidden flex items-center gap-2">
+                <button onclick="restartExam()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-2xl shadow-md active:scale-95 transition">🔄 重新測驗</button>
+                <a href="index.html" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-2.5 rounded-2xl shadow-sm active:scale-95 transition text-center">🏠 回首頁</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交卷確認視窗 -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">🤔</div>
+            <p id="confirmText" class="text-sm text-slate-600 leading-relaxed font-medium"></p>
+            <div class="flex gap-2">
+                <button onclick="continueAnswering()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-2xl active:scale-95 transition">繼續作答</button>
+                <button onclick="confirmSubmit()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">直接交卷</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 一般提示視窗 -->
+    <div id="noticeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="modal-pop bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-xl">
+            <div class="text-4xl">📢</div>
+            <p id="noticeText" class="text-sm text-slate-600 leading-relaxed"></p>
+            <button onclick="closeModal('noticeModal')" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl shadow-md active:scale-95 transition">好的</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 題庫（內容皆已逐題驗算） =================
+        const bank = {
+            tf: [
+                { id: 'tf1', lesson: 1, q: '5120 < 5210。', a: true,
+                  exp: '千位都是 5，再比百位：1 比 2 小，所以 5120 < 5210。' },
+                { id: 'tf2', lesson: 1, q: '在 3636 中，十位的 3 表示 300。', a: false,
+                  exp: '十位的 3 只表示 30，百位的 6 才表示 600。' },
+                { id: 'tf3', lesson: 1, q: '8 個千和 5 個十合起來是 8050。', a: true,
+                  exp: '8 個千是 8000，5 個十是 50，8000 + 50 = 8050。' },
+                { id: 'tf4', lesson: 1, q: '9 張 100 元和 11 張 10 元，合起來是 1100 元。', a: false,
+                  exp: '9 張 100 元是 900 元，11 張 10 元是 110 元，900 + 110 = 1010 元，不是 1100 元。' },
+                { id: 'tf5', lesson: 2, q: '438 + 297 = 735。', a: true,
+                  exp: '個位 8+7=15 寫 5 進 1；十位 3+9+1=13 寫 3 進 1；百位 4+2+1=7，答案 735。' },
+                { id: 'tf6', lesson: 2, q: '804 − 357 = 457。', a: false,
+                  exp: '被減數十位是 0，要連續退位：個位 14−7=7，十位 9−5=4，百位 7−3=4，答案是 447。' },
+                { id: 'tf7', lesson: 3, q: '1 公分 = 10 毫米，所以 3 公分 = 30 毫米。', a: true,
+                  exp: '3 個 10 毫米就是 30 毫米。' },
+                { id: 'tf8', lesson: 3, q: '48 毫米等於 8 公分 4 毫米。', a: false,
+                  exp: '48 毫米裡有 4 個 10 毫米（4 公分），還多 8 毫米，是 4 公分 8 毫米。' },
+                { id: 'tf9', lesson: 4, q: '76 × 4 = 304。', a: true,
+                  exp: '6×4=24 寫 4 進 2；7×4=28，加 2 是 30，答案 304。' },
+                { id: 'tf10', lesson: 4, q: '估算 298 × 4 時，把 298 約成 300，大約是 1000。', a: false,
+                  exp: '298 約是 300，300 × 4 = 1200，大約是 1200，不是 1000。' }
+            ],
+            mcq: [
+                { id: 'm1', lesson: 1, q: '4 個千、0 個百、7 個十、9 個一合起來是多少？',
+                  opts: ['4079', '4709', '4790', '479'], a: '4079',
+                  exp: '千位 4、百位 0、十位 7、個位 9，合起來是 4079。' },
+                { id: 'm2', lesson: 1, q: '「六千三百零二」用數字記成：',
+                  opts: ['6320', '6302', '6032', '6300'], a: '6302',
+                  exp: '千位 6、百位 3、十位 0、個位 2，記成 6302。' },
+                { id: 'm3', lesson: 1, q: '下面哪一個數最小？',
+                  opts: ['7348', '7384', '7438', '7283'], a: '7283',
+                  exp: '千位都是 7，再比百位：2 最小，所以 7283 最小。' },
+                { id: 'm4', lesson: 2, q: '702 − 365 = ？',
+                  opts: ['337', '347', '437', '343'], a: '337',
+                  exp: '被減數十位是 0，要連續退位：個位 12−5=7，十位 9−6=3，百位 6−3=3。' },
+                { id: 'm5', lesson: 2, q: '6000 − 3256 = ？',
+                  opts: ['2744', '2844', '3744', '2754'], a: '2744',
+                  exp: '連續退位：個位 10−6=4，十位 9−5=4，百位 9−2=7，千位 5−3=2，答案 2744。' },
+                { id: 'm6', lesson: 2, q: '849 + 575 = ？',
+                  opts: ['1424', '1414', '1324', '1524'], a: '1424',
+                  exp: '個位 9+5=14 寫 4 進 1；十位 4+7+1=12 寫 2 進 1；百位 8+5+1=14，答案 1424。' },
+                { id: 'm7', lesson: 3, q: '8 公分 6 毫米等於多少毫米？',
+                  opts: ['86 毫米', '806 毫米', '68 毫米', '14 毫米'], a: '86 毫米',
+                  exp: '8 公分 = 80 毫米，再加 6 毫米，等於 86 毫米。' },
+                { id: 'm8', lesson: 3, q: '9 公分 4 毫米 − 3 公分 1 毫米 = ？',
+                  opts: ['6 公分 3 毫米', '6 公分 5 毫米', '13 公分 5 毫米', '5 公分 3 毫米'], a: '6 公分 3 毫米',
+                  exp: '公分和公分減：9 − 3 = 6；毫米和毫米減：4 − 1 = 3。' },
+                { id: 'm9', lesson: 4, q: '一盒巧克力有 3 個，每個巧克力 28 元，小華買了 4 盒，共要付多少元？',
+                  opts: ['336 元', '112 元', '84 元', '340 元'], a: '336 元',
+                  exp: '先算一盒：28 × 3 = 84 元；再算 4 盒：84 × 4 = 336 元。' },
+                { id: 'm10', lesson: 4, q: '麵包一個 198 元，買 4 個大約要多少元？（用估算）',
+                  opts: ['600 元', '800 元', '1000 元', '720 元'], a: '800 元',
+                  exp: '198 約是 200，200 × 4 = 800，大約 800 元。' }
+            ],
+            calc: [
+                { id: 'c1', lesson: 1, q: '5 個千、27 個十和 8 個一合起來是多少？', a: [5278], units: [''],
+                  exp: '27 個十是 270，5000 + 270 + 8 = 5278。' },
+                { id: 'c2', lesson: 1, q: '小明的存錢筒裡有 3 張 1000 元、7 張 100 元、5 個 10 元和 9 個 1 元，合起來是多少元？', a: [3759], units: ['元'],
+                  exp: '3000 + 700 + 50 + 9 = 3759 元。' },
+                { id: 'c3', lesson: 2, q: '4752 + 3689 = ？', a: [8441], units: [''],
+                  exp: '個位 2+9=11 寫 1 進 1；十位 5+8+1=14 寫 4 進 1；百位 7+6+1=14 寫 4 進 1；千位 4+3+1=8。答案 8441。' },
+                { id: 'c4', lesson: 2, q: '9000 − 4573 = ？', a: [4427], units: [''],
+                  exp: '連續退位：個位 10−3=7，十位 9−7=2，百位 9−5=4，千位 8−4=4。答案 4427。' },
+                { id: 'c5', lesson: 2, q: '媽媽帶了 2000 元去買菜，花了 845 元，還剩下多少元？', a: [1155], units: ['元'],
+                  exp: '2000 − 845：個位 10−5=5，十位 9−4=5，百位 9−8=1，千位 1。答案 1155 元。' },
+                { id: 'c6', lesson: 3, q: '小明的鉛筆長 7 公分 4 毫米，小華的鉛筆長 2 公分 9 毫米，兩枝鉛筆接起來長多少？', a: [10, 3], units: ['公分', '毫米'], labels: ['公分', '毫米'],
+                  exp: '毫米 4+9=13，滿 10 向公分進 1，寫 3 毫米；公分 7+2+1=10。答案 10 公分 3 毫米。' },
+                { id: 'c7', lesson: 4, q: '一箱蘋果 308 元，買 5 箱共要多少元？', a: [1540], units: ['元'],
+                  exp: '8×5=40 寫 0 進 4；0×5=0，加 4 是 4；3×5=15。答案 1540 元。' },
+                { id: 'c8', lesson: 4, q: '一盒彈珠有 5 顆，一袋有 9 盒，爸爸買了 4 袋，共有幾顆彈珠？', a: [180], units: ['顆'],
+                  exp: '先算一袋：5 × 9 = 45 顆；再算 4 袋：45 × 4 = 180 顆。' }
+            ]
+        };
+
+        const SECTIONS = [
+            { key: 'tf',   title: '一、是非題', sub: '對的選「⭕ 對」，錯的選「❌ 錯」（每題 2 分）', head: 'bg-sky-100 text-sky-900' },
+            { key: 'mcq',  title: '二、單選題', sub: '選出一個最正確的答案（每題 4 分）',           head: 'bg-violet-100 text-violet-900' },
+            { key: 'calc', title: '三、計算題', sub: '把答案寫在空格裡（每題 5 分）',               head: 'bg-amber-100 text-amber-900' }
+        ];
+        const POINTS = { tf: 2, mcq: 4, calc: 5 };
+        const LESSON_NAMES = { 1: '10000以內的數', 2: '三、四位數加減法', 3: '毫米與公分', 4: '乘法', 5: '角與圖形', 6: '面積', 7: '除法', 8: '公升與毫升', 9: '分數' };
+        const LESSON_TAG = {
+            1: 'bg-sky-100 text-sky-700', 2: 'bg-emerald-100 text-emerald-700',
+            3: 'bg-amber-100 text-amber-700', 4: 'bg-purple-100 text-purple-700',
+            5: 'bg-rose-100 text-rose-700', 6: 'bg-teal-100 text-teal-700',
+            7: 'bg-indigo-100 text-indigo-700', 8: 'bg-cyan-100 text-cyan-700',
+            9: 'bg-lime-100 text-lime-700'
+        };
+        const LABELS = ['①', '②', '③', '④'];
+        const TOTAL = bank.tf.length + bank.mcq.length + bank.calc.length;
+
+        const STATE = {
+            def:      'border-slate-200 bg-white text-slate-700',
+            selected: 'border-indigo-500 bg-indigo-50 text-indigo-700',
+            right:    'border-emerald-500 bg-emerald-50 text-emerald-700',
+            wrong:    'border-rose-500 bg-rose-50 text-rose-700',
+            dim:      'border-slate-100 bg-slate-50 text-slate-400'
+        };
+        const BASE = {
+            tf:  'py-3 rounded-2xl border-2 font-black text-base transition active:scale-95 ',
+            mcq: 'w-full text-left px-4 py-3 rounded-2xl border-2 font-bold text-sm transition active:scale-[.98] flex items-center gap-2 '
+        };
+
+        // ================= 狀態 =================
+        let order = {};      // 各大題目前的出題順序
+        let mcqOpts = {};    // 單選題打亂後的選項
+        let ans = {};        // 作答內容
+        let graded = false;
+        let onlyWrong = false;
+        let results = {};    // 每題對錯
+
+        // ================= 工具 =================
+        function esc(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // 文字轉 HTML，並把 m/n 轉成分數樣式
+        function ft(s) {
+            return esc(s).replace(/(\d+)\/(\d+)/g, '<span class="fraction"><span>$1</span><span>$2</span></span>');
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function findQ(id) {
+            for (const key of Object.keys(bank)) {
+                const q = bank[key].find(x => x.id === id);
+                if (q) return { type: key, q };
+            }
+            return null;
+        }
+
+        function formatCalcAnswer(q) {
+            if (q.answerText) return q.answerText;
+            return q.a.map((v, i) => v + (q.units[i] ? ' ' + q.units[i] : '')).join(' ');
+        }
+
+        function showModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+        function showNotice(msg) {
+            document.getElementById('noticeText').innerText = msg;
+            showModal('noticeModal');
+        }
+
+        // ================= 語音 =================
+        function toSpeech(text) {
+            return text
+                .replace(/(\d+)\/(\d+)/g, '$2分之$1')
+                .replace(/÷/g, ' 除以 ')
+                .replace(/…/g, ' 餘 ')
+                .replace(/\s[−-]\s/g, ' 減 ')
+                .replace(/\+/g, ' 加 ')
+                .replace(/×/g, ' 乘以 ')
+                .replace(/=/g, ' 等於 ')
+                .replace(/>/g, ' 大於 ')
+                .replace(/</g, ' 小於 ')
+                .replace(/[？?]/g, ' 多少');
+        }
+
+        function speak(text) {
+            if (!('speechSynthesis' in window)) {
+                showNotice('您的瀏覽器不支援語音朗讀功能');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-TW';
+            u.rate = 0.9;
+            window.speechSynthesis.speak(u);
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function readQ(id) {
+            const f = findQ(id);
+            if (!f) return;
+            let t = toSpeech(f.q.q);
+            if (f.type === 'tf') {
+                t += ' 這句話是對的，還是錯的？';
+            } else if (f.type === 'mcq') {
+                mcqOpts[id].forEach((o, i) => { t += ` 選項${i + 1}，${toSpeech(o)}。`; });
+            }
+            speak(t);
+        }
+
+        window.addEventListener('pagehide', stopSpeech);
+
+        // ================= 畫面產生 =================
+        function cardHTML(type, q, n) {
+            let area = '';
+            if (type === 'tf') {
+                area = `
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" data-type="tf" data-id="${q.id}" data-val="true"  class="choice ${BASE.tf}${STATE.def}">⭕ 對</button>
+                        <button type="button" data-type="tf" data-id="${q.id}" data-val="false" class="choice ${BASE.tf}${STATE.def}">❌ 錯</button>
+                    </div>`;
+            } else if (type === 'mcq') {
+                area = `<div class="space-y-2">` + mcqOpts[q.id].map((o, i) => `
+                    <button type="button" data-type="mcq" data-id="${q.id}" data-idx="${i}" class="choice ${BASE.mcq}${STATE.def}">
+                        <span class="shrink-0 font-black text-indigo-500">${LABELS[i]}</span><span>${ft(o)}</span>
+                    </button>`).join('') + `</div>`;
+            } else {
+                area = `<div class="flex flex-wrap items-center gap-2">` + q.a.map((_, i) => `
+                    <input type="number" inputmode="numeric" data-id="${q.id}" data-i="${i}" placeholder="${q.labels ? q.labels[i] : '答案'}"
+                           class="calc-input w-28 border-2 border-slate-200 rounded-xl px-3 py-2 text-lg font-black text-center text-slate-700 focus:outline-none focus:border-indigo-500">
+                    ${q.units[i] ? `<span class="text-sm font-bold text-slate-500">${esc(q.units[i])}</span>` : ''}`).join('') + `</div>`;
+            }
+
+            return `
+                <div id="card-${q.id}" class="qcard bg-white rounded-3xl border-2 border-slate-100 shadow-sm p-4 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center font-black text-sm">${n}</span>
+                            <span class="text-[11px] font-black px-2 py-0.5 rounded-full ${LESSON_TAG[q.lesson]}">第 ${q.lesson} 課</span>
+                        </div>
+                        <button type="button" onclick="readQ('${q.id}')" class="shrink-0 bg-indigo-50 text-indigo-600 w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition" aria-label="朗讀題目">🔊</button>
+                    </div>
+                    <p class="font-bold text-slate-800 leading-relaxed">${ft(q.q)}</p>
+                    ${area}
+                    <div id="fb-${q.id}" class="hidden"></div>
+                </div>`;
+        }
+
+        function render() {
+            let html = '';
+            SECTIONS.forEach(sec => {
+                html += `<section class="space-y-3">
+                    <div class="${sec.head} rounded-2xl px-4 py-3">
+                        <h2 class="font-black text-base">${sec.title}</h2>
+                        <p class="text-xs font-medium opacity-80">${sec.sub}</p>
+                    </div>`;
+                order[sec.key].forEach((q, i) => { html += cardHTML(sec.key, q, i + 1); });
+                html += `</section>`;
+            });
+            document.getElementById('examBody').innerHTML = html;
+        }
+
+        // ================= 作答互動 =================
+        function setChoice(btn, state) {
+            btn.className = 'choice ' + BASE[btn.dataset.type] + STATE[state];
+        }
+
+        function isAnswered(type, q) {
+            const v = ans[q.id];
+            if (type === 'calc') {
+                return Array.isArray(v) && q.a.every((_, i) => v[i] !== undefined && String(v[i]).trim() !== '');
+            }
+            return v !== undefined;
+        }
+
+        function countAnswered() {
+            let n = 0;
+            Object.keys(bank).forEach(k => bank[k].forEach(q => { if (isAnswered(k, q)) n++; }));
+            return n;
+        }
+
+        function updateCount() {
+            const n = countAnswered();
+            document.getElementById('answeredCount').innerText = n;
+            document.getElementById('headerAnswered').innerText = n;
+        }
+
+        document.getElementById('examBody').addEventListener('click', e => {
+            if (graded) return;
+            const btn = e.target.closest('.choice');
+            if (!btn) return;
+            const id = btn.dataset.id;
+
+            if (btn.dataset.type === 'tf') {
+                ans[id] = btn.dataset.val === 'true';
+            } else {
+                ans[id] = mcqOpts[id][Number(btn.dataset.idx)];
+            }
+            document.querySelectorAll(`#card-${id} .choice`).forEach(b => setChoice(b, b === btn ? 'selected' : 'def'));
+            updateCount();
+        });
+
+        document.getElementById('examBody').addEventListener('input', e => {
+            if (graded) return;
+            const input = e.target.closest('.calc-input');
+            if (!input) return;
+            const id = input.dataset.id;
+            if (!Array.isArray(ans[id])) ans[id] = [];
+            ans[id][Number(input.dataset.i)] = input.value;
+            updateCount();
+        });
+
+        // ================= 交卷與評分 =================
+        function firstUnanswered() {
+            for (const sec of SECTIONS) {
+                for (const q of order[sec.key]) {
+                    if (!isAnswered(sec.key, q)) return q;
+                }
+            }
+            return null;
+        }
+
+        function submitExam() {
+            if (graded) return;
+            stopSpeech();
+            const left = TOTAL - countAnswered();
+            if (left > 0) {
+                document.getElementById('confirmText').innerText = `還有 ${left} 題沒有作答喔！要繼續作答，還是直接交卷呢？`;
+                showModal('confirmModal');
+            } else {
+                gradeExam();
+            }
+        }
+
+        function continueAnswering() {
+            closeModal('confirmModal');
+            const q = firstUnanswered();
+            if (q) {
+                const card = document.getElementById('card-' + q.id);
+                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function confirmSubmit() {
+            closeModal('confirmModal');
+            gradeExam();
+        }
+
+        function checkOne(type, q) {
+            if (!isAnswered(type, q)) return false;
+            if (type === 'tf') return ans[q.id] === q.a;
+            if (type === 'mcq') return ans[q.id] === q.a;
+            return q.a.every((v, i) => Number(ans[q.id][i]) === v);
+        }
+
+        function gradeExam() {
+            graded = true;
+            results = {};
+            const sectionScore = { tf: 0, mcq: 0, calc: 0 };
+            const wrongLessons = new Set();
+            let wrongCount = 0;
+
+            SECTIONS.forEach(sec => {
+                order[sec.key].forEach(q => {
+                    const type = sec.key;
+                    const ok = checkOne(type, q);
+                    const answered = isAnswered(type, q);
+                    results[q.id] = ok;
+                    if (ok) sectionScore[type] += POINTS[type];
+                    else { wrongLessons.add(q.lesson); wrongCount++; }
+
+                    const card = document.getElementById('card-' + q.id);
+                    card.classList.remove('border-slate-100');
+                    card.classList.add(ok ? 'border-emerald-300' : 'border-rose-300');
+
+                    // 標示選項
+                    if (type === 'tf') {
+                        card.querySelectorAll('.choice').forEach(b => {
+                            b.disabled = true;
+                            const val = b.dataset.val === 'true';
+                            if (val === q.a) setChoice(b, 'right');
+                            else if (answered && ans[q.id] === val) setChoice(b, 'wrong');
+                            else setChoice(b, 'dim');
+                        });
+                    } else if (type === 'mcq') {
+                        card.querySelectorAll('.choice').forEach(b => {
+                            b.disabled = true;
+                            const text = mcqOpts[q.id][Number(b.dataset.idx)];
+                            if (text === q.a) setChoice(b, 'right');
+                            else if (answered && ans[q.id] === text) setChoice(b, 'wrong');
+                            else setChoice(b, 'dim');
+                        });
+                    } else {
+                        card.querySelectorAll('.calc-input').forEach((inp, i) => {
+                            inp.disabled = true;
+                            const good = inp.value.trim() !== '' && Number(inp.value) === q.a[i];
+                            inp.classList.remove('border-slate-200');
+                            inp.classList.add(good ? 'border-emerald-500' : 'border-rose-500', good ? 'bg-emerald-50' : 'bg-rose-50');
+                        });
+                    }
+
+                    // 解析
+                    const correctText = type === 'tf' ? (q.a ? '⭕ 對' : '❌ 錯')
+                                      : type === 'mcq' ? q.a
+                                      : formatCalcAnswer(q);
+                    const fb = document.getElementById('fb-' + q.id);
+                    fb.classList.remove('hidden');
+                    if (ok) {
+                        fb.className = 'bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl p-3 text-sm leading-relaxed';
+                        fb.innerHTML = `<b>✅ 答對了！</b><br>💡 ${ft(q.exp)}`;
+                    } else {
+                        fb.className = 'bg-rose-50 text-rose-800 border border-rose-200 rounded-2xl p-3 text-sm leading-relaxed';
+                        fb.innerHTML = `<b>${answered ? '❌ 答錯了' : '⚪ 沒有作答'}</b>　正確答案：<b>${ft(correctText)}</b><br>💡 ${ft(q.exp)}`;
+                    }
+                });
+            });
+
+            const total = sectionScore.tf + sectionScore.mcq + sectionScore.calc;
+            renderResult(total, sectionScore, [...wrongLessons].sort(), wrongCount);
+
+            document.getElementById('introCard').classList.add('hidden');
+            document.getElementById('headerCount').classList.add('hidden');
+            document.getElementById('barExam').classList.add('hidden');
+            document.getElementById('barDone').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            speak(total === 100
+                ? '太厲害了！你全部答對，一百分！'
+                : `考試結束！你的得分是 ${total} 分。${wrongCount > 0 ? '看看答錯的題目，再試一次吧！' : ''}`);
+        }
+
+        function renderResult(total, sectionScore, wrongLessons, wrongCount) {
+            let emoji, msg;
+            if (total >= 90) { emoji = '🏆'; msg = '太厲害了！你是數學小達人！'; }
+            else if (total >= 80) { emoji = '🌟'; msg = '很棒喔！再細心一點就更完美了！'; }
+            else if (total >= 60) { emoji = '👍'; msg = '不錯喔！看看錯題的解析，再挑戰一次吧！'; }
+            else { emoji = '💪'; msg = '沒關係！先複習一下課程，再來挑戰！'; }
+
+            const review = wrongLessons.length
+                ? `<div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-900 font-medium space-y-2">
+                       <div class="font-black">📚 建議複習：</div>
+                       <div class="flex flex-wrap gap-2">${wrongLessons.map(n =>
+                           `<a href="lesson${n}.html" class="bg-white border border-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-full text-xs active:scale-95 transition">第 ${n} 課 ${LESSON_NAMES[n]}</a>`).join('')}</div>
+                   </div>`
+                : `<div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-sm text-emerald-800 font-black text-center">🎉 全部答對，沒有需要複習的單元！</div>`;
+
+            const filterBtn = wrongCount > 0
+                ? `<button id="filterBtn" onclick="toggleOnlyWrong()" class="w-full bg-rose-50 text-rose-700 font-bold py-2.5 rounded-2xl border border-rose-200 active:scale-95 transition">👀 只看錯題（${wrongCount} 題）</button>`
+                : '';
+
+            const card = document.getElementById('resultCard');
+            card.className = 'pop';
+            card.innerHTML = `
+                <div class="bg-white rounded-3xl border-2 border-amber-200 shadow-md p-5 space-y-4 text-center">
+                    <div class="text-6xl">${emoji}</div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-500">你的得分</div>
+                        <div class="text-5xl font-black text-amber-600">${total}<span class="text-xl text-slate-400"> / 100</span></div>
+                        <p class="mt-1 text-sm font-bold text-slate-600">${msg}</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs font-bold">
+                        <div class="bg-sky-50 text-sky-800 rounded-2xl py-2">⭕ 是非題<div class="text-base font-black">${sectionScore.tf} / 20</div></div>
+                        <div class="bg-violet-50 text-violet-800 rounded-2xl py-2">🔘 單選題<div class="text-base font-black">${sectionScore.mcq} / 40</div></div>
+                        <div class="bg-amber-50 text-amber-800 rounded-2xl py-2">🧮 計算題<div class="text-base font-black">${sectionScore.calc} / 40</div></div>
+                    </div>
+                    <div class="text-left">${review}</div>
+                    ${filterBtn}
+                </div>`;
+        }
+
+        function toggleOnlyWrong() {
+            onlyWrong = !onlyWrong;
+            document.querySelectorAll('.qcard').forEach(card => {
+                const id = card.id.replace('card-', '');
+                card.classList.toggle('hidden', onlyWrong && results[id]);
+            });
+            const btn = document.getElementById('filterBtn');
+            if (btn) {
+                const wrong = Object.values(results).filter(v => !v).length;
+                btn.innerText = onlyWrong ? '📋 看全部題目' : `👀 只看錯題（${wrong} 題）`;
+            }
+        }
+
+        // ================= 開始／重新測驗 =================
+        function startExam() {
+            SECTIONS.forEach(sec => { order[sec.key] = shuffle(bank[sec.key]); });
+            mcqOpts = {};
+            bank.mcq.forEach(q => { mcqOpts[q.id] = shuffle(q.opts); });
+            ans = {};
+            results = {};
+            graded = false;
+            onlyWrong = false;
+            render();
+            updateCount();
+        }
+
+        function restartExam() {
+            stopSpeech();
+            startExam();
+            const rc = document.getElementById('resultCard');
+            rc.className = 'hidden';
+            rc.innerHTML = '';
+            document.getElementById('introCard').classList.remove('hidden');
+            document.getElementById('headerCount').classList.remove('hidden');
+            document.getElementById('barExam').classList.remove('hidden');
+            document.getElementById('barDone').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('.totalQ').forEach(el => { el.innerText = TOTAL; });
+        startExam();
+    </script>
+</body>
+</html>

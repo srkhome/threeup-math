@@ -250,7 +250,7 @@
                 </div>
 
                 <!-- 第五課：角與圖形 -->
-                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-rose-100 overflow-hidden sm:col-span-2" data-lesson="5">
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-rose-100 overflow-hidden" data-lesson="5">
                     <a href="lesson5.html" class="block" onclick="markVisited(5)">
                         <div class="bg-gradient-to-br from-rose-100 to-pink-200 p-3">
                             <!-- 角與圖形 -->
@@ -288,53 +288,226 @@
                             class="absolute top-2 right-2 bg-white/90 text-rose-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第五課">🔊</button>
                 </div>
 
+                <!-- 第6課 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-teal-100 overflow-hidden" data-lesson="6">
+                    <a href="lesson6.html" class="block" onclick="markVisited(6)">
+                        <div class="bg-gradient-to-br from-teal-100 to-cyan-200 p-3">
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="方格與面積">
+                                <g stroke="#0f766e" stroke-width="1.5">
+                                    <rect x="14" y="12" width="17" height="17" fill="#5eead4"/><rect x="31" y="12" width="17" height="17" fill="#5eead4"/><rect x="48" y="12" width="17" height="17" fill="#5eead4"/><rect x="65" y="12" width="17" height="17" fill="#5eead4"/><rect x="82" y="12" width="17" height="17" fill="#ffffff" stroke="#99f6e4"/><rect x="99" y="12" width="17" height="17" fill="#ffffff" stroke="#99f6e4"/>
+                                    <rect x="14" y="29" width="17" height="17" fill="#5eead4"/><rect x="31" y="29" width="17" height="17" fill="#5eead4"/><rect x="48" y="29" width="17" height="17" fill="#5eead4"/><rect x="65" y="29" width="17" height="17" fill="#5eead4"/><rect x="82" y="29" width="17" height="17" fill="#5eead4"/><rect x="99" y="29" width="17" height="17" fill="#ffffff" stroke="#99f6e4"/>
+                                    <rect x="14" y="46" width="17" height="17" fill="#5eead4"/><rect x="31" y="46" width="17" height="17" fill="#5eead4"/><rect x="48" y="46" width="17" height="17" fill="#5eead4"/><rect x="65" y="46" width="17" height="17" fill="#5eead4"/><rect x="82" y="46" width="17" height="17" fill="#5eead4"/><rect x="99" y="46" width="17" height="17" fill="#5eead4"/>
+                                </g>
+                                <rect x="124" y="12" width="22" height="22" fill="#bbf7d0" stroke="#16a34a" stroke-width="2.5"/>
+                                <text x="135" y="27" font-size="8" font-weight="900" fill="#166534" text-anchor="middle">1 cm²</text>
+                                <text x="80" y="86" font-size="13" font-weight="900" fill="#0f766e" text-anchor="middle">數一數 = 幾平方公分</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-teal-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 6 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">面積</h3>
+                            <p class="text-sm text-slate-500 font-medium">平方公分、數方格與面積估算</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">📐 平方公分</span>
+                                <span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">🔲 數格子</span>
+                                <span class="bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">🍃 估算</span>
+                            </div>
+                            <div class="pt-1 text-teal-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第六課，面積。認識平方公分，學習數方格算面積，還有面積的估算。')"
+                            class="absolute top-2 right-2 bg-white/90 text-teal-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第6課">🔊</button>
+                </div>
+
+                <!-- 第7課 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-indigo-100 overflow-hidden" data-lesson="7">
+                    <a href="lesson7.html" class="block" onclick="markVisited(7)">
+                        <div class="bg-gradient-to-br from-indigo-100 to-blue-200 p-3">
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="12 個蛋塔分成 4 盤">
+                                <g fill="#ffffff" stroke="#6366f1" stroke-width="2.5">
+                                    <circle cx="29" cy="38" r="15"/><circle cx="63" cy="38" r="15"/><circle cx="97" cy="38" r="15"/><circle cx="131" cy="38" r="15"/>
+                                </g>
+                                <g fill="#6366f1">
+                                    <circle cx="23" cy="43" r="3.6"/><circle cx="35" cy="43" r="3.6"/><circle cx="29" cy="32" r="3.6"/>
+                                    <circle cx="57" cy="43" r="3.6"/><circle cx="69" cy="43" r="3.6"/><circle cx="63" cy="32" r="3.6"/>
+                                    <circle cx="91" cy="43" r="3.6"/><circle cx="103" cy="43" r="3.6"/><circle cx="97" cy="32" r="3.6"/>
+                                    <circle cx="125" cy="43" r="3.6"/><circle cx="137" cy="43" r="3.6"/><circle cx="131" cy="32" r="3.6"/>
+                                </g>
+                                <text x="80" y="82" font-size="16" font-weight="900" fill="#4338ca" text-anchor="middle">12 ÷ 3 = 4</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-indigo-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 7 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">除法</h3>
+                            <p class="text-sm text-slate-500 font-medium">整除、餘數與生活應用</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">🍰 整除</span>
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">🍓 餘數</span>
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">🦢 生活應用</span>
+                            </div>
+                            <div class="pt-1 text-indigo-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第七課，除法。認識整除與餘數，學習除法的生活應用。')"
+                            class="absolute top-2 right-2 bg-white/90 text-indigo-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第7課">🔊</button>
+                </div>
+
+                <!-- 第8課 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-cyan-100 overflow-hidden" data-lesson="8">
+                    <a href="lesson8.html" class="block" onclick="markVisited(8)">
+                        <div class="bg-gradient-to-br from-cyan-100 to-sky-200 p-3">
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="公升與毫升">
+                                <rect x="40" y="14" width="14" height="12" rx="3" fill="#ffffff" stroke="#0e7490" stroke-width="2.5"/>
+                                <rect x="28" y="24" width="38" height="58" rx="9" fill="#a5f3fc" stroke="#06b6d4" stroke-width="3"/>
+                                <text x="47" y="58" font-size="15" font-weight="900" fill="#0e7490" text-anchor="middle">2 L</text>
+                                <text x="82" y="54" font-size="20" font-weight="900" fill="#475569" text-anchor="middle">=</text>
+                                <path d="M104 40 L134 40 L128 82 L110 82 Z" fill="#bae6fd" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+                                <text x="119" y="66" font-size="9" font-weight="900" fill="#0369a1" text-anchor="middle">2000</text>
+                                <text x="119" y="76" font-size="8" font-weight="900" fill="#0369a1" text-anchor="middle">mL</text>
+                                <text x="80" y="95" font-size="10" font-weight="700" fill="#475569" text-anchor="middle">1 公升 = 1000 毫升</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-cyan-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 8 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">公升與毫升</h3>
+                            <p class="text-sm text-slate-500 font-medium">容量單位、換算與加減</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full">💧 公升</span>
+                                <span class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full">🧪 毫升</span>
+                                <span class="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-full">🔄 換算</span>
+                            </div>
+                            <div class="pt-1 text-cyan-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第八課，公升與毫升。認識容量單位，學習換算與加減。')"
+                            class="absolute top-2 right-2 bg-white/90 text-cyan-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第8課">🔊</button>
+                </div>
+
+                <!-- 第9課 -->
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-lime-100 overflow-hidden sm:col-span-2" data-lesson="9">
+                    <a href="lesson9.html" class="block" onclick="markVisited(9)">
+                        <div class="bg-gradient-to-br from-lime-100 to-green-200 p-3">
+                            <svg viewBox="0 0 160 100" class="w-full h-28" role="img" aria-label="披薩與四分之一">
+                                <circle cx="46" cy="50" r="36" fill="#fde68a" stroke="#d97706" stroke-width="3"/>
+                                <path d="M46 50 L46 14 A36 36 0 0 1 82 50 Z" fill="#f87171" stroke="#b91c1c" stroke-width="3" stroke-linejoin="round"/>
+                                <line x1="46" y1="50" x2="46" y2="86" stroke="#d97706" stroke-width="2.5"/>
+                                <line x1="10" y1="50" x2="46" y2="50" stroke="#d97706" stroke-width="2.5"/>
+                                <text x="112" y="46" font-size="26" font-weight="900" fill="#4d7c0f" text-anchor="middle">1</text>
+                                <line x1="96" y1="52" x2="128" y2="52" stroke="#4d7c0f" stroke-width="3" stroke-linecap="round"/>
+                                <text x="112" y="78" font-size="26" font-weight="900" fill="#4d7c0f" text-anchor="middle">4</text>
+                                <text x="140" y="40" font-size="9" font-weight="900" fill="#dc2626" text-anchor="middle">分子</text>
+                                <text x="140" y="74" font-size="9" font-weight="900" fill="#2563eb" text-anchor="middle">分母</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-lime-500 text-white text-xs font-black px-2.5 py-1 rounded-full">第 9 課</span>
+                                <span class="visited hidden text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✅ 學過了</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">分數</h3>
+                            <p class="text-sm text-slate-500 font-medium">平分、分子分母與比大小</p>
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+                                <span class="bg-lime-50 text-lime-700 px-2 py-0.5 rounded-full">🍕 平分</span>
+                                <span class="bg-lime-50 text-lime-700 px-2 py-0.5 rounded-full">🔢 分子分母</span>
+                                <span class="bg-lime-50 text-lime-700 px-2 py-0.5 rounded-full">⚖️ 比大小</span>
+                            </div>
+                            <div class="pt-1 text-lime-600 font-black text-sm">開始學習 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('第九課，分數。認識平分、分子與分母，還有分數的大小比較。')"
+                            class="absolute top-2 right-2 bg-white/90 text-lime-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀第9課">🔊</button>
+                </div>
+
+
             </div>
         </section>
 
-        <!-- ================= 綜合考題 ================= -->
+        <!-- ================= 綜合測驗 ================= -->
         <section>
-            <h2 class="text-lg font-black text-slate-700 mb-3 px-1">🏆 綜合挑戰</h2>
+            <h2 class="text-lg font-black text-slate-700 mb-3 px-1">🏆 綜合測驗</h2>
+            <p class="text-xs text-slate-500 font-medium px-1 -mt-2 mb-3">每份 28 題（是非 10、單選 10、計算 8），滿分 100 分，交卷後有答案與解析。</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-            <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-orange-200 overflow-hidden">
-                <a href="exam.html" class="block sm:flex">
-                    <div class="bg-gradient-to-br from-amber-100 via-orange-100 to-rose-200 p-3 sm:w-1/2">
-                        <!-- 考卷 -->
-                        <svg viewBox="0 0 160 100" class="w-full h-32" role="img" aria-label="考卷與100分">
-                            <rect x="38" y="8" width="84" height="86" rx="7" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5"/>
-                            <g stroke="#e5e7eb" stroke-width="2" stroke-linecap="round">
-                                <line x1="50" y1="34" x2="84" y2="34"/>
-                                <line x1="50" y1="52" x2="84" y2="52"/>
-                                <line x1="50" y1="70" x2="84" y2="70"/>
-                            </g>
-                            <g font-size="15" font-weight="900">
-                                <text x="92" y="39" fill="#10b981">✓</text>
-                                <text x="92" y="57" fill="#ef4444">✗</text>
-                                <text x="92" y="75" fill="#10b981">✓</text>
-                            </g>
-                            <text x="44" y="26" font-size="9" font-weight="900" fill="#b45309">綜合考題</text>
-                            <circle cx="118" cy="22" r="19" fill="#ef4444"/>
-                            <text x="118" y="28" font-size="17" font-weight="900" fill="#ffffff" text-anchor="middle">100</text>
-                            <text x="16" y="34" font-size="20">⭐</text>
-                            <text x="132" y="86" font-size="22">✏️</text>
-                            <text x="14" y="80" font-size="16">🏅</text>
-                        </svg>
-                    </div>
-                    <div class="p-4 space-y-2 sm:w-1/2 sm:flex sm:flex-col sm:justify-center">
-                        <div>
-                            <span class="bg-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-full">綜合測驗</span>
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-amber-200 overflow-hidden">
+                    <a href="exam.html" class="block">
+                        <div class="bg-gradient-to-br from-amber-100 via-yellow-100 to-orange-100 p-3">
+                            <svg viewBox="0 0 160 90" class="w-full h-24" role="img" aria-label="測驗一">
+                                <rect x="46" y="6" width="68" height="78" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="2.5"/>
+                                <g stroke="#e5e7eb" stroke-width="2" stroke-linecap="round"><line x1="58" y1="32" x2="90" y2="32"/><line x1="58" y1="48" x2="90" y2="48"/><line x1="58" y1="64" x2="90" y2="64"/></g>
+                                <g font-size="14" font-weight="900"><text x="96" y="37" fill="#10b981">✓</text><text x="96" y="53" fill="#ef4444">✗</text><text x="96" y="69" fill="#10b981">✓</text></g>
+                                <text x="80" y="24" font-size="11" font-weight="900" fill="#d97706" text-anchor="middle">測驗一</text>
+                                <circle cx="130" cy="22" r="14" fill="#ef4444"/>
+                                <text x="130" y="27" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">100</text>
+                                <text x="24" y="30" font-size="18">⭐</text><text x="22" y="74" font-size="16">✏️</text>
+                            </svg>
                         </div>
-                        <h3 class="text-xl font-black text-slate-800">第一至第四課 綜合考題</h3>
-                        <p class="text-sm text-slate-500 font-medium">共 28 題，滿分 100 分，交卷後有答案與解析</p>
-                        <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
-                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">⭕ 是非題</span>
-                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🔘 單選題</span>
-                            <span class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">🧮 計算題</span>
+                        <div class="p-4 space-y-2">
+                            <span class="inline-block bg-amber-500 text-white text-xs font-black px-2.5 py-1 rounded-full">測驗一</span>
+                            <h3 class="text-lg font-black text-slate-800">第一至第四課</h3>
+                            <p class="text-sm text-slate-500 font-medium">是非題、單選題、計算題</p>
+                            <div class="pt-1 text-amber-600 font-black text-sm">開始考試 ➜</div>
                         </div>
-                        <div class="pt-1 text-orange-600 font-black text-sm">開始考試 ➜</div>
-                    </div>
-                </a>
-                <button onclick="speak('綜合考題。包含第一課到第四課的是非題、單選題和計算題，一共二十八題，滿分一百分。')"
-                        class="absolute top-2 right-2 bg-white/90 text-orange-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀綜合考題">🔊</button>
+                    </a>
+                    <button onclick="speak('測驗一。第一課到第四課的綜合測驗，滿分一百分。')"
+                            class="absolute top-2 right-2 bg-white/90 text-amber-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀測驗一">🔊</button>
+                </div>
+
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-orange-200 overflow-hidden">
+                    <a href="exam2.html" class="block">
+                        <div class="bg-gradient-to-br from-orange-100 via-amber-100 to-rose-100 p-3">
+                            <svg viewBox="0 0 160 90" class="w-full h-24" role="img" aria-label="測驗二">
+                                <rect x="46" y="6" width="68" height="78" rx="7" fill="#ffffff" stroke="#ea580c" stroke-width="2.5"/>
+                                <g stroke="#e5e7eb" stroke-width="2" stroke-linecap="round"><line x1="58" y1="32" x2="90" y2="32"/><line x1="58" y1="48" x2="90" y2="48"/><line x1="58" y1="64" x2="90" y2="64"/></g>
+                                <g font-size="14" font-weight="900"><text x="96" y="37" fill="#10b981">✓</text><text x="96" y="53" fill="#ef4444">✗</text><text x="96" y="69" fill="#10b981">✓</text></g>
+                                <text x="80" y="24" font-size="11" font-weight="900" fill="#ea580c" text-anchor="middle">測驗二</text>
+                                <circle cx="130" cy="22" r="14" fill="#ef4444"/>
+                                <text x="130" y="27" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">100</text>
+                                <text x="24" y="30" font-size="18">⭐</text><text x="22" y="74" font-size="16">✏️</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <span class="inline-block bg-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-full">測驗二</span>
+                            <h3 class="text-lg font-black text-slate-800">第一至第四課</h3>
+                            <p class="text-sm text-slate-500 font-medium">換一組題目再挑戰</p>
+                            <div class="pt-1 text-orange-600 font-black text-sm">開始考試 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('測驗二。第一課到第四課的綜合測驗，題目和測驗一不一樣，滿分一百分。')"
+                            class="absolute top-2 right-2 bg-white/90 text-orange-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀測驗二">🔊</button>
+                </div>
+
+                <div class="lesson-card relative bg-white rounded-3xl shadow-md border-2 border-red-200 overflow-hidden">
+                    <a href="exam3.html" class="block">
+                        <div class="bg-gradient-to-br from-rose-100 via-pink-100 to-red-100 p-3">
+                            <svg viewBox="0 0 160 90" class="w-full h-24" role="img" aria-label="測驗三">
+                                <rect x="46" y="6" width="68" height="78" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="2.5"/>
+                                <g stroke="#e5e7eb" stroke-width="2" stroke-linecap="round"><line x1="58" y1="32" x2="90" y2="32"/><line x1="58" y1="48" x2="90" y2="48"/><line x1="58" y1="64" x2="90" y2="64"/></g>
+                                <g font-size="14" font-weight="900"><text x="96" y="37" fill="#10b981">✓</text><text x="96" y="53" fill="#ef4444">✗</text><text x="96" y="69" fill="#10b981">✓</text></g>
+                                <text x="80" y="24" font-size="11" font-weight="900" fill="#dc2626" text-anchor="middle">測驗三</text>
+                                <circle cx="130" cy="22" r="14" fill="#ef4444"/>
+                                <text x="130" y="27" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">100</text>
+                                <text x="24" y="30" font-size="18">⭐</text><text x="22" y="74" font-size="16">✏️</text>
+                            </svg>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <span class="inline-block bg-red-500 text-white text-xs font-black px-2.5 py-1 rounded-full">測驗三</span>
+                            <h3 class="text-lg font-black text-slate-800">第五至第九課</h3>
+                            <p class="text-sm text-slate-500 font-medium">角、面積、除法、容量、分數</p>
+                            <div class="pt-1 text-red-600 font-black text-sm">開始考試 ➜</div>
+                        </div>
+                    </a>
+                    <button onclick="speak('測驗三。第五課到第九課的綜合測驗，滿分一百分。')"
+                            class="absolute top-2 right-2 bg-white/90 text-red-600 w-9 h-9 rounded-full shadow flex items-center justify-center active:scale-90 transition" aria-label="朗讀測驗三">🔊</button>
+                </div>
             </div>
         </section>
 
